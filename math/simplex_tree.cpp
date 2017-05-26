@@ -618,3 +618,163 @@ void SimplexTree::print_bifiltration(STNode* node, std::string parent, int cur_d
         }
     }
 }
+
+///// FUNCTIONS TO WRITE A Macaulay2 FILE FOR COMPUTING GRADED BETTI NUMBERS ///// 
+
+void SimplexTree::write_M2_file(std::string filename)
+{
+    //open the file
+    std::string m2filename = filename.append(".m2");
+    std::ofstream m2file(m2filename);
+
+    if(m2file.is_open())
+    {
+        //work over the binary field
+        m2file << "R=ZZ/2[x,y,Degrees=>{{1,0},{0,1}}]" << std::endl;
+
+        //write the R-modules
+        m2file << "C2=R^{";
+        for(SimplexSet::iterator it = ordered_high_simplices.begin(); it != ordered_high_simplices.end(); ++it)
+        {
+            if(it != ordered_high_simplices.begin())
+                m2file << ",";
+            STNode* n = *it;
+            m2file << "{";
+            if(n->grade_x() > 0)
+                m2file << "-";
+            m2file << n->grade_x() << ",";
+            if(n->grade_y() > 0)
+                m2file << "-";
+            m2file << n->grade_y() << "}";
+        }
+        m2file << "}" << std::endl << "C1=R^{";
+        for(SimplexSet::iterator it = ordered_simplices.begin(); it != ordered_simplices.end(); ++it)
+        {
+            if(it != ordered_simplices.begin())
+                m2file << ",";
+            STNode* n = *it;
+            m2file << "{";
+            if(n->grade_x() > 0)
+                m2file << "-";
+            m2file << n->grade_x() << ",";
+            if(n->grade_y() > 0)
+                m2file << "-";
+            m2file << n->grade_y() << "}";
+        }
+        m2file << "}" << std::endl << "C0=R^{";
+        for(SimplexSet::iterator it = ordered_low_simplices.begin(); it != ordered_low_simplices.end(); ++it)
+        {
+            if(it != ordered_low_simplices.begin())
+                m2file << ",";
+            STNode* n = *it;
+            m2file << "{";
+            if(n->grade_x() > 0)
+                m2file << "-";
+            m2file << n->grade_x() << ",";
+            if(n->grade_y() > 0)
+                m2file << "-";
+            m2file << n->grade_y() << "}";
+        }
+        m2file << "}" << std::endl;
+
+        //write the boundary matrices
+        m2file << "Id=promote(1,R)" << std::endl;
+        m2file << "d2=map(C1,C2,{";
+        int col = 0;
+        bool first_entry = true;
+        for(SimplexSet::iterator it = ordered_high_simplices.begin(); it != ordered_high_simplices.end(); ++it)
+        {
+            write_M2_matrix_col(m2file, *it, col, first_entry);
+            col++;
+        }
+        m2file << "});" << std::endl << "d1=map(C0,C1,{";
+        if(hom_dim > 0)
+        {
+            col = 0;
+            first_entry = true;
+            for(SimplexSet::iterator it = ordered_simplices.begin(); it != ordered_simplices.end(); ++it)
+            {
+                write_M2_matrix_col(m2file, *it, col, first_entry);
+                col++;
+            }
+        }
+        m2file << "});" << std::endl;
+
+        //write lines of M2 code to check for mistakes
+        m2file << "isHomogeneous(d2)" << std::endl;
+        m2file << "isHomogeneous(d1)" << std::endl;
+
+        //write lines of M2 code to compute and display Betti numbers
+        m2file << "HM=homology(d1,d2);" << std::endl;
+        m2file << "HMin=prune(HM);" << std::endl;
+        m2file << "Res=res(HMin)" << std::endl;
+        m2file << "Betti_Nums=betti(Res)" << std::endl;
+        m2file << "elements(Betti_Nums)" << std::endl;
+
+        //finished writing to the file
+        m2file.close();
+    }
+    else {
+        debug() << "ERROR: File " << m2filename << " failed to open.";
+    }
+
+}//end write_M2_file()
+
+void SimplexTree::write_M2_matrix_col(std::ofstream& stream, STNode* n, int col, bool& first_entry)
+{
+    //get vertex list for this simplex
+    std::vector<int> verts = find_vertices(n->global_index());
+
+    //find all facets of this simplex
+    for(unsigned k=0; k<verts.size(); k++)
+    {
+        //facet vertices are all vertices in verts[] except verts[k]
+        std::vector<int> facet;
+        for(unsigned l=0; l<verts.size(); l++)
+            if(l != k)
+                facet.push_back(verts[l]);
+
+        //look up dimension index of the facet
+        STNode* facet_node = find_simplex(facet);
+        if(facet_node == NULL)
+            throw std::runtime_error("facet simplex not found");
+        int facet_di = facet_node->dim_index();
+
+        //get grade difference between simplex and facet
+        int x_diff = n->grade_x() - facet_node->grade_x();
+        int y_diff = n->grade_y() - facet_node->grade_y();
+
+        //write the entry in the matrix
+        if(!first_entry)
+            stream << ",";
+        else
+            first_entry = false;
+        stream << "(" << facet_di << "," << col << ")=>";
+        if(x_diff == 0)
+        {
+            if(y_diff == 0)
+                stream << "Id";
+            else
+            {
+                stream << "y";
+                if(y_diff > 1)
+                    stream << "^" << y_diff;
+            }
+        }
+        else
+        {
+            stream << "x";
+            if(x_diff > 1)
+                stream << "^" << x_diff;
+
+            if(y_diff > 0)
+                stream << "*y";
+            if(y_diff > 1)
+                stream << "^" << y_diff;
+        }
+    }
+}//end write_M2_matrix_col()
+
+
+
+

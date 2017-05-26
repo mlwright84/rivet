@@ -278,6 +278,7 @@ int main(int argc, char* argv[])
 
     if (args["<input_file>"].isString()) {
         params.fileName = args["<input_file>"].asString();
+        params.shortName = params.fileName.substr(params.fileName.rfind("/")+1);
     } else if (args["<precomputed_file>"].isString()) {
         params.fileName = args["<precomputed_file>"].asString();
     } else {

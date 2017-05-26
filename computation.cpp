@@ -54,6 +54,18 @@ std::unique_ptr<ComputationResult> Computation::compute_raw(ComputationInput& in
             }
         }
     }
+
+    //write Macaulay2 file for computing Betti numbers
+    if (verbosity >= 2) {
+        debug() << "WRITING Macaulay2 FILE FOR COMPUTING BETTI NUMBERS";
+    }
+
+    input.bifiltration().write_M2_file(params.shortName);
+
+    if (verbosity >= 2) {
+        debug() << "  -- Macaulay2 file written";
+    }
+
     //STAGE 3: COMPUTE MULTIGRADED BETTI NUMBERS
 
     std::unique_ptr<ComputationResult> result(new ComputationResult);

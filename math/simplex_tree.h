@@ -39,6 +39,8 @@ class MapMatrix_Perm;
 
 #include "st_node.h"
 
+#include <iostream>  //for writing M2 files
+#include <fstream>  //for writing M2 files
 #include <set>
 #include <string>
 #include <vector>
@@ -123,6 +125,11 @@ public:
     //print bifiltration in the RIVET bifiltration input format
     void print_bifiltration();
     void print_bifiltration(STNode* node, std::string parent, int cur_dim, int print_dim);
+
+    ///// FUNCTIONS TO WRITE A Macaulay2 FILE FOR COMPUTING GRADED BETTI NUMBERS ///// 
+    void write_M2_file(std::string filename);
+    void write_M2_matrix_col(std::ofstream& stream, STNode* n, int col, bool& first_entry);
+
 
 private:
     STNode* root; //root node of the simplex tree
