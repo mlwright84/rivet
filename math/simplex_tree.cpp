@@ -621,10 +621,10 @@ void SimplexTree::print_bifiltration(STNode* node, std::string parent, int cur_d
 
 ///// FUNCTIONS TO WRITE A Macaulay2 FILE FOR COMPUTING GRADED BETTI NUMBERS ///// 
 
-void SimplexTree::write_M2_file(std::string filename)
+void SimplexTree::write_bigraded_M2_file(std::string filename)
 {
     //open the file
-    std::string m2filename = filename.append(".m2");
+    std::string m2filename = filename.append(".bigraded.m2");
     std::ofstream m2file(m2filename);
 
     if(m2file.is_open())
@@ -704,12 +704,19 @@ void SimplexTree::write_M2_file(std::string filename)
         m2file << "isHomogeneous(d2)" << std::endl;
         m2file << "isHomogeneous(d1)" << std::endl;
 
+        //start a timer
+        m2file << "t1 = cpuTime();" << std::endl;
+
         //write lines of M2 code to compute and display Betti numbers
         m2file << "HM=homology(d1,d2);" << std::endl;
         m2file << "HMin=prune(HM);" << std::endl;
         m2file << "Res=res(HMin)" << std::endl;
         m2file << "Betti_Nums=betti(Res)" << std::endl;
         m2file << "elements(Betti_Nums)" << std::endl;
+
+        //stop timer and print time
+        m2file << "t2 = cpuTime();" << std::endl;
+        m2file << "t2 - t1" << std::endl;
 
         //finished writing to the file
         m2file.close();
@@ -718,7 +725,277 @@ void SimplexTree::write_M2_file(std::string filename)
         debug() << "ERROR: File " << m2filename << " failed to open.";
     }
 
-}//end write_M2_file()
+}//end write_bigraded_M2_file()
+
+void SimplexTree::write_singly_graded_M2_file(std::string filename)
+{
+    //open the file
+    std::string m2filename = filename.append(".singly_graded.m2");
+    std::ofstream m2file(m2filename);
+
+    if(m2file.is_open())
+    {
+        //work over the binary field
+        m2file << "R=ZZ/2[x,y,Degrees=>{{1},{1}}]" << std::endl;
+
+        //write the R-modules
+        m2file << "C2=R^{";
+        for(SimplexSet::iterator it = ordered_high_simplices.begin(); it != ordered_high_simplices.end(); ++it)
+        {
+            if(it != ordered_high_simplices.begin())
+                m2file << ",";
+            STNode* n = *it;
+            m2file << "{";
+            int sum = 0;
+            if (n->grade_x() > 0)
+                sum -= n->grade_x();
+            else
+                sum += n->grade_x();
+            if (n->grade_y() > 0)
+                sum -= n->grade_y();
+            else
+                sum += n->grade_y();
+            m2file << sum;
+            //if(n->grade_x() > 0)
+            //    m2file << "-";
+            //m2file << n->grade_x() << ",";
+            //if(n->grade_y() > 0)
+            //    m2file << "-";
+            m2file << "}";
+        }
+        m2file << "}" << std::endl << "C1=R^{";
+        for(SimplexSet::iterator it = ordered_simplices.begin(); it != ordered_simplices.end(); ++it)
+        {
+            if(it != ordered_simplices.begin())
+                m2file << ",";
+            STNode* n = *it;
+            m2file << "{";
+            int sum = 0;
+            if (n->grade_x() > 0)
+                sum -= n->grade_x();
+            else
+                sum += n->grade_x();
+            if (n->grade_y() > 0)
+                sum -= n->grade_y();
+            else
+                sum += n->grade_y();
+            m2file << sum;
+            //if(n->grade_x() > 0)
+            //    m2file << "-";
+            //m2file << n->grade_x() << ",";
+            //if(n->grade_y() > 0)
+            //    m2file << "-";
+            m2file << "}";
+        }
+        m2file << "}" << std::endl << "C0=R^{";
+        for(SimplexSet::iterator it = ordered_low_simplices.begin(); it != ordered_low_simplices.end(); ++it)
+        {
+            if(it != ordered_low_simplices.begin())
+                m2file << ",";
+            STNode* n = *it;
+            m2file << "{";
+            int sum = 0;
+            if (n->grade_x() > 0)
+                sum -= n->grade_x();
+            else
+                sum += n->grade_x();
+            if (n->grade_y() > 0)
+                sum -= n->grade_y();
+            else
+                sum += n->grade_y();
+            m2file << sum;
+            //if(n->grade_x() > 0)
+            //    m2file << "-";
+            //m2file << n->grade_x() << ",";
+            //if(n->grade_y() > 0)
+            //    m2file << "-";
+            m2file << "}";
+        }
+        m2file << "}" << std::endl;
+
+        //write the boundary matrices
+        m2file << "Id=promote(1,R)" << std::endl;
+        m2file << "d2=map(C1,C2,{";
+        int col = 0;
+        bool first_entry = true;
+        for(SimplexSet::iterator it = ordered_high_simplices.begin(); it != ordered_high_simplices.end(); ++it)
+        {
+            write_M2_matrix_col(m2file, *it, col, first_entry);
+            col++;
+        }
+        m2file << "});" << std::endl << "d1=map(C0,C1,{";
+        if(hom_dim > 0)
+        {
+            col = 0;
+            first_entry = true;
+            for(SimplexSet::iterator it = ordered_simplices.begin(); it != ordered_simplices.end(); ++it)
+            {
+                write_M2_matrix_col(m2file, *it, col, first_entry);
+                col++;
+            }
+        }
+        m2file << "});" << std::endl;
+
+        //write lines of M2 code to check for mistakes
+        m2file << "isHomogeneous(d2)" << std::endl;
+        m2file << "isHomogeneous(d1)" << std::endl;
+
+        //start a timer
+        m2file << "t1 = cpuTime();" << std::endl;
+
+        //write lines of M2 code to compute and display Betti numbers
+        m2file << "HM=homology(d1,d2);" << std::endl;
+        m2file << "HMin=prune(HM);" << std::endl;
+        m2file << "Res=res(HMin)" << std::endl;
+        m2file << "Betti_Nums=betti(Res)" << std::endl;
+        m2file << "elements(Betti_Nums)" << std::endl;
+
+        //stop timer and print time
+        m2file << "t2 = cpuTime();" << std::endl;
+        m2file << "t2 - t1" << std::endl;
+
+        //finished writing to the file
+        m2file.close();
+    }
+    else {
+        debug() << "ERROR: File " << m2filename << " failed to open.";
+    }
+
+}//end write_singly_graded_M2_file()
+
+void SimplexTree::write_minimal_betti_M2_file(std::string filename)
+{
+    //open the file
+    std::string m2filename = filename.append(".minimal_betti.m2");
+    std::ofstream m2file(m2filename);
+
+    if(m2file.is_open())
+    {
+        //work over the binary field
+        m2file << "R=ZZ/2[x,y,Degrees=>{1,1},MonomialOrder=>{Position=>Up}]" << std::endl;
+
+        //write the R-modules
+        m2file << "C2=R^{";
+        for(SimplexSet::iterator it = ordered_high_simplices.begin(); it != ordered_high_simplices.end(); ++it)
+        {
+            if(it != ordered_high_simplices.begin())
+                m2file << ",";
+            STNode* n = *it;
+            m2file << "{";
+            int sum = 0;
+            if (n->grade_x() > 0)
+                sum -= n->grade_x();
+            else
+                sum += n->grade_x();
+            if (n->grade_y() > 0)
+                sum -= n->grade_y();
+            else
+                sum += n->grade_y();
+            m2file << sum;
+            //if(n->grade_x() > 0)
+            //    m2file << "-";
+            //m2file << n->grade_x() << ",";
+            //if(n->grade_y() > 0)
+            //    m2file << "-";
+            m2file << "}";
+        }
+        m2file << "}" << std::endl << "C1=R^{";
+        for(SimplexSet::iterator it = ordered_simplices.begin(); it != ordered_simplices.end(); ++it)
+        {
+            if(it != ordered_simplices.begin())
+                m2file << ",";
+            STNode* n = *it;
+            m2file << "{";
+            int sum = 0;
+            if (n->grade_x() > 0)
+                sum -= n->grade_x();
+            else
+                sum += n->grade_x();
+            if (n->grade_y() > 0)
+                sum -= n->grade_y();
+            else
+                sum += n->grade_y();
+            m2file << sum;
+            //if(n->grade_x() > 0)
+            //    m2file << "-";
+            //m2file << n->grade_x() << ",";
+            //if(n->grade_y() > 0)
+            //    m2file << "-";
+            m2file << "}";
+        }
+        m2file << "}" << std::endl << "C0=R^{";
+        for(SimplexSet::iterator it = ordered_low_simplices.begin(); it != ordered_low_simplices.end(); ++it)
+        {
+            if(it != ordered_low_simplices.begin())
+                m2file << ",";
+            STNode* n = *it;
+            m2file << "{";
+            int sum = 0;
+            if (n->grade_x() > 0)
+                sum -= n->grade_x();
+            else
+                sum += n->grade_x();
+            if (n->grade_y() > 0)
+                sum -= n->grade_y();
+            else
+                sum += n->grade_y();
+            m2file << sum;
+            //if(n->grade_x() > 0)
+            //    m2file << "-";
+            //m2file << n->grade_x() << ",";
+            //if(n->grade_y() > 0)
+            //    m2file << "-";
+            m2file << "}";
+        }
+        m2file << "}" << std::endl;
+
+        //write the boundary matrices
+        m2file << "Id=promote(1,R)" << std::endl;
+        m2file << "d2=map(C1,C2,{";
+        int col = 0;
+        bool first_entry = true;
+        for(SimplexSet::iterator it = ordered_high_simplices.begin(); it != ordered_high_simplices.end(); ++it)
+        {
+            write_M2_matrix_col(m2file, *it, col, first_entry);
+            col++;
+        }
+        m2file << "});" << std::endl << "d1=map(C0,C1,{";
+        if(hom_dim > 0)
+        {
+            col = 0;
+            first_entry = true;
+            for(SimplexSet::iterator it = ordered_simplices.begin(); it != ordered_simplices.end(); ++it)
+            {
+                write_M2_matrix_col(m2file, *it, col, first_entry);
+                col++;
+            }
+        }
+        m2file << "});" << std::endl;
+
+        //write lines of M2 code to check for mistakes
+        m2file << "isHomogeneous(d2)" << std::endl;
+        m2file << "isHomogeneous(d1)" << std::endl;
+
+        //start a timer
+        m2file << "t1 = cpuTime();" << std::endl;
+
+        //write lines of M2 code to compute and display Betti numbers
+        m2file << "HM=homology(d1,d2);" << std::endl;
+        m2file << "Betti_Nums=minimalBetti(HM)" << std::endl;
+        m2file << "elements(Betti_Nums)" << std::endl;
+
+        //stop timer and print time
+        m2file << "t2 = cpuTime();" << std::endl;
+        m2file << "t2 - t1" << std::endl;
+        
+        //finished writing to the file
+        m2file.close();
+    }
+    else {
+        debug() << "ERROR: File " << m2filename << " failed to open.";
+    }
+
+}//end write_minimal_betti_M2_file()
 
 void SimplexTree::write_M2_matrix_col(std::ofstream& stream, STNode* n, int col, bool& first_entry)
 {

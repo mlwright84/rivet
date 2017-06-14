@@ -57,10 +57,12 @@ std::unique_ptr<ComputationResult> Computation::compute_raw(ComputationInput& in
 
     //write Macaulay2 file for computing Betti numbers
     if (verbosity >= 2) {
-        debug() << "WRITING Macaulay2 FILE FOR COMPUTING BETTI NUMBERS";
+        debug() << "WRITING Macaulay2 FILES FOR COMPUTING BETTI NUMBERS";
     }
 
-    input.bifiltration().write_M2_file(params.shortName);
+    input.bifiltration().write_bigraded_M2_file(params.shortName);
+    input.bifiltration().write_singly_graded_M2_file(params.shortName);
+    input.bifiltration().write_minimal_betti_M2_file(params.shortName);
 
     if (verbosity >= 2) {
         debug() << "  -- Macaulay2 file written";
