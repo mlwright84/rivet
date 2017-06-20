@@ -709,14 +709,17 @@ void SimplexTree::write_bigraded_M2_file(std::string filename)
 
         //write lines of M2 code to compute and display Betti numbers
         m2file << "HM=homology(d1,d2);" << std::endl;
+        m2file << "t2 = cpuTime();" << std::endl;
         m2file << "HMin=prune(HM);" << std::endl;
+        m2file << "t3 = cpuTime();" << std::endl;
         m2file << "Res=res(HMin)" << std::endl;
         m2file << "Betti_Nums=betti(Res)" << std::endl;
+        m2file << "t4 = cpuTime();" << std::endl;
         m2file << "elements(Betti_Nums)" << std::endl;
 
         //stop timer and print time
-        m2file << "t2 = cpuTime();" << std::endl;
-        m2file << "t2 - t1" << std::endl;
+        m2file << "t5 = cpuTime();" << std::endl;
+        m2file << "t5 - t1" << std::endl;
 
         //finished writing to the file
         m2file.close();
@@ -845,14 +848,17 @@ void SimplexTree::write_singly_graded_M2_file(std::string filename)
 
         //write lines of M2 code to compute and display Betti numbers
         m2file << "HM=homology(d1,d2);" << std::endl;
+        m2file << "t2 = cpuTime();" << std::endl;
         m2file << "HMin=prune(HM);" << std::endl;
+        m2file << "t3 = cpuTime();" << std::endl;
         m2file << "Res=res(HMin)" << std::endl;
         m2file << "Betti_Nums=betti(Res)" << std::endl;
+        m2file << "t4 = cpuTime();" << std::endl;
         m2file << "elements(Betti_Nums)" << std::endl;
 
         //stop timer and print time
-        m2file << "t2 = cpuTime();" << std::endl;
-        m2file << "t2 - t1" << std::endl;
+        m2file << "t5 = cpuTime();" << std::endl;
+        m2file << "t5 - t1" << std::endl;
 
         //finished writing to the file
         m2file.close();
@@ -981,12 +987,14 @@ void SimplexTree::write_minimal_betti_M2_file(std::string filename)
 
         //write lines of M2 code to compute and display Betti numbers
         m2file << "HM=homology(d1,d2);" << std::endl;
+        m2file << "t2 = cpuTime();" << std::endl;
         m2file << "Betti_Nums=minimalBetti(HM)" << std::endl;
+        m2file << "t3 = cpuTime();" << std::endl;
         m2file << "elements(Betti_Nums)" << std::endl;
 
         //stop timer and print time
-        m2file << "t2 = cpuTime();" << std::endl;
-        m2file << "t2 - t1" << std::endl;
+        m2file << "t4 = cpuTime();" << std::endl;
+        m2file << "t4 - t1" << std::endl;
         
         //finished writing to the file
         m2file.close();
