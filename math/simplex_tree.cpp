@@ -624,7 +624,7 @@ void SimplexTree::print_bifiltration(STNode* node, std::string parent, int cur_d
 void SimplexTree::write_bigraded_M2_file(std::string filename)
 {
     //open the file
-    std::string m2filename = filename.append(".bigraded.m2");
+    std::string m2filename = filename.substring(0, filename.size() - 4).append(".bigraded.m2");
     std::ofstream m2file(m2filename);
 
     if(m2file.is_open())
@@ -717,9 +717,10 @@ void SimplexTree::write_bigraded_M2_file(std::string filename)
         m2file << "t4 = cpuTime();" << std::endl;
         m2file << "elements(Betti_Nums)" << std::endl;
 
-        //stop timer and print time
+        //stop timer and print times to a file (from M2 file)
         m2file << "t5 = cpuTime();" << std::endl;
-        m2file << "t5 - t1" << std::endl;
+        m2file << "f = openOutAppend \"bigraded_m2_times.txt\"" << std::endl;
+        m2file << "f << t2 - t1 << \" \" << t3 - t2 << \" \" << t4 - t3 << \" \" << t5 - t4 << endl" << std::endl;
 
         //finished writing to the file
         m2file.close();
@@ -733,7 +734,7 @@ void SimplexTree::write_bigraded_M2_file(std::string filename)
 void SimplexTree::write_singly_graded_M2_file(std::string filename)
 {
     //open the file
-    std::string m2filename = filename.append(".singly_graded.m2");
+    std::string m2filename = filename.substring(0, filename.size() - 4).append(".singly_graded.m2");
     std::ofstream m2file(m2filename);
 
     if(m2file.is_open())
@@ -858,7 +859,8 @@ void SimplexTree::write_singly_graded_M2_file(std::string filename)
 
         //stop timer and print time
         m2file << "t5 = cpuTime();" << std::endl;
-        m2file << "t5 - t1" << std::endl;
+        m2file << "f = openOutAppend \"singly_graded_m2_times.txt\"" << std::endl;
+        m2file << "f << t2 - t1 << \" \" << t3 - t2 << \" \" << t4 - t3 << \" \" << t5 - t4 << endl" << std::endl;
 
         //finished writing to the file
         m2file.close();
@@ -872,7 +874,7 @@ void SimplexTree::write_singly_graded_M2_file(std::string filename)
 void SimplexTree::write_minimal_betti_M2_file(std::string filename)
 {
     //open the file
-    std::string m2filename = filename.append(".minimal_betti.m2");
+    std::string m2filename = filename.substring(0, filename.size() - 4).append(".minimal_betti.m2");
     std::ofstream m2file(m2filename);
 
     if(m2file.is_open())
@@ -994,7 +996,8 @@ void SimplexTree::write_minimal_betti_M2_file(std::string filename)
 
         //stop timer and print time
         m2file << "t4 = cpuTime();" << std::endl;
-        m2file << "t4 - t1" << std::endl;
+        m2file << "f = openOutAppend \"minimalBetti_m2_times.txt\"" << std::endl;
+        m2file << "f << t2 - t1 << \" \" << t3 - t2 << \" \" << t4 - t3 << endl" << std::endl;
         
         //finished writing to the file
         m2file.close();

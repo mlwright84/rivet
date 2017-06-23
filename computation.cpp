@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "debug.h"
 #include "math/multi_betti.h"
 #include "timer.h"
+#include <fstream>
 #include <chrono>
 
 Computation::Computation(InputParameters& params, Progress& progress)
@@ -39,6 +40,11 @@ Computation::~Computation()
 
 std::unique_ptr<ComputationResult> Computation::compute_raw(ComputationInput& input)
 {
+    std::ofstream output;
+    output.open("rivet_timing.txt", std::ios_base::app);
+    Timer timer;
+    long time;
+
     if (verbosity >= 2) {
         debug() << "\nBIFILTRATION:";
         debug() << "   Number of simplices of dimension " << params.dim << " : " << input.bifiltration().get_size(params.dim);
@@ -54,6 +60,10 @@ std::unique_ptr<ComputationResult> Computation::compute_raw(ComputationInput& in
             }
         }
     }
+
+    time = timer.elapsed();
+    debug() << "  -- bifiltration computation took " << time << " milliseconds";
+    output << time << " ";
 
     //write Macaulay2 file for computing Betti numbers
     if (verbosity >= 2) {
@@ -76,12 +86,14 @@ std::unique_ptr<ComputationResult> Computation::compute_raw(ComputationInput& in
         debug() << "COMPUTING xi_0, xi_1, AND xi_2 FOR HOMOLOGY DIMENSION " << params.dim << ":";
     }
     MultiBetti mb(input.bifiltration(), params.dim);
-    Timer timer;
+    timer.restart();
     mb.compute(result->homology_dimensions, progress);
     mb.compute_xi2(result->homology_dimensions);
 
     if (verbosity >= 2) {
-        debug() << "  -- xi_i computation took " << timer.elapsed() << " milliseconds";
+        time = timer.elapsed()
+        debug() << "  -- xi_i computation took " << time << " milliseconds";
+        output << time << "\n";
     }
 
     //store the xi support points
