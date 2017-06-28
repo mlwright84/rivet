@@ -59,7 +59,7 @@ protected:
     virtual unsigned width() const; //returns the number of columns in the matrix
     virtual unsigned height() const; //returns the number of rows in the matrix
 
-    virtual void set(unsigned i, unsigned j); //sets (to 1) the entry in row i, column j
+    virtual void set(unsigned i, unsigned j, element value); //sets (to value) the entry in row i, column j
     virtual void clear(unsigned i, unsigned j); //clears (sets to 0) the entry in row i, column j
     virtual bool entry(unsigned i, unsigned j); //returns true if entry (i,j) is 1, false otherwise
 
@@ -67,17 +67,17 @@ protected:
 
     class MapMatrixNode { //subclass for the nodes in the MapMatrix
     public:
-        MapMatrixNode(unsigned row, element entry); //constructor
+        MapMatrixNode(unsigned row, element value); //constructor
 
         unsigned get_row(); //returns the row index
         void set_next(MapMatrixNode* n); //sets the pointer to the next node in the column
         MapMatrixNode* get_next(); //returns a pointer to the next node in the column
-        void set_entry(element a); //sets the matrix entry (in prime field F_p) corresponding to this node
-        entry get_entry(); //gets the matrix entry (in prime field F_p) corresponding to this node
+        void set_value(element value); //sets the matrix entry (in prime field F_p) corresponding to this node
+        element get_value(); //gets the matrix entry (in prime field F_p) corresponding to this node
 
     private:
         unsigned row_index; //index of matrix row corresponding to this node
-        element value;      //nonzero matrix entry corresponding to this node (element of prime field F_p)
+        element fpval;      //nonzero matrix entry corresponding to this node (element of prime field F_p)
         MapMatrixNode* next; //pointer to the next entry in the column containing this node
     };
 

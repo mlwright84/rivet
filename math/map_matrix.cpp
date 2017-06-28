@@ -31,8 +31,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /********** implementation of base class MapMatrix_Base **********/
 
 //implementation of subclass MapMatrixNode
-MapMatrix_Base::MapMatrixNode::MapMatrixNode(unsigned row)
+MapMatrix_Base::MapMatrixNode::MapMatrixNode(unsigned row, element value)
     : row_index(row)
+    , fpval(value)
     , next(NULL)
 {
 }
@@ -50,6 +51,16 @@ void MapMatrix_Base::MapMatrixNode::set_next(MapMatrixNode* n)
 MapMatrix_Base::MapMatrixNode* MapMatrix_Base::MapMatrixNode::get_next()
 {
     return next;
+}
+
+void MapMatrix_Base::MapMatrixNode::set_value(element value)
+{
+    fpval = value;
+}
+
+element MapMatrix_Base::MapMatrixNode::get_value()
+{
+    return fpval;
 }
 
 //constructor to create matrix of specified size (all entries zero)
@@ -96,7 +107,7 @@ unsigned MapMatrix_Base::height() const
 }
 
 //sets (to 1) the entry in row i, column j
-void MapMatrix_Base::set(unsigned i, unsigned j)
+void MapMatrix_Base::set(unsigned i, unsigned j, element value)
 {
     //make sure this operation is valid
     if (columns.size() <= j)
