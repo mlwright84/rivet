@@ -60,7 +60,8 @@ public:
             }
             g_ = i - 1; // this is the primitive element
         }
-	std::cout << "-- primitive element: " << g_ << "\n";
+
+		std::cout << "-- primitive element: " << g_ << "\n";
 
         // initialize exp and log tables
         exp.resize(p_);
@@ -69,7 +70,7 @@ public:
             exp[i] = n;  // n = g^i (mod p)
             log[n] = i;  // i = log base g of n in this field
         }
-        exp[p_ - 1] = 0;  // isn't this unnecessary?
+        exp[p_ - 1] = 1;  // maybe unnecessary, but avoids special case in inv()
         log[0] = p_ - 1;  // isn't this unnecessary?
 	
 	std::cout << "exp: ";
@@ -100,18 +101,27 @@ public:
     	return ( t < p_ ? t : t - p_ );  // ensure value is mod p
     }
 
+    element sub(element a, element b) const {
+    	element t = a - b;
+    	return ( t < 0 ? t + p_ : t );
+    }
+
     element inv(element a) const {
+    	if(a == 0)
+    		throw std::runtime_error("cannot invert 0");
         element x = p_ - 1 - log[a];
         return exp[x];
     }
 
     element mul(element a, element b) const {
+        if(a == 0 || b == 0)
+        	return 0;
         element x = log[a] + log[b];
-        return ( x < p_ ? exp[x] : exp[x - p_] );
+        return ( x < p_ - 1 ? exp[x] : exp[x - (p_ - 1)] );
     }
 
     element div(element a, element b) const {
-        return mul(a, inv(b));
+        return mul(a, inv(b)); // a divided by b
     }
 
     bool is_zero(element a) const { return a == 0; }
@@ -130,19 +140,41 @@ private:
 
 int main()
 {
-    int p = 7;
+    int p = 11;
     FFp R = FFp(p);
 
     std::cout << "Created field with order " << R.order() << "\n";
 
     std::cout << "Negatives:\n";
     for(int i = 0; i < p; i++) {
-        std::cout << "  " << i << "^{-1} = " << R.neg(i) << "\n";
+        std::cout << "  -" << i << " = " << R.neg(i) << "\n";
     }
     std::cout << "Multiplicative Inverses:\n";
-    for(int i = 0; i < p; i++) {
+    for(int i = 1; i < p; i++) {
         std::cout << "  " << i << "^{-1} = " << R.inv(i) << "\n";
     }
-
-
+	std::cout << "Addition Table:\n";
+	for(int i = 0; i < p; i++) {
+		for(int j = 0; j < p; j++)
+			std::cout << R.add(i,j) << "\t";
+		std::cout << "\n";
+	}
+	std::cout << "Subtraction Table:\n";
+	for(int i = 0; i < p; i++) {
+		for(int j = 0; j < p; j++)
+			std::cout << R.sub(i,j) << "\t";
+		std::cout << "\n";
+	}
+	std::cout << "Multiplication Table:\n";
+	for(int i = 0; i < p; i++) {
+		for(int j = 0; j < p; j++)
+			std::cout << R.mul(i,j) << "\t";
+		std::cout << "\n";
+	}
+	std::cout << "Division Table:\n";
+	for(int i = 0; i < p; i++) {
+		for(int j = 1; j < p; j++)
+			std::cout << R.div(i,j) << "\t";
+		std::cout << "\n";
+	}
 }
