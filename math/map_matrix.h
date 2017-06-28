@@ -43,6 +43,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class IndexMatrix;
 
+#include "FFp.hpp" //for prime fields
+
 #include <ostream> //for testing
 #include <vector>
 
@@ -65,14 +67,17 @@ protected:
 
     class MapMatrixNode { //subclass for the nodes in the MapMatrix
     public:
-        MapMatrixNode(unsigned row); //constructor
+        MapMatrixNode(unsigned row, element entry); //constructor
 
         unsigned get_row(); //returns the row index
         void set_next(MapMatrixNode* n); //sets the pointer to the next node in the column
         MapMatrixNode* get_next(); //returns a pointer to the next node in the column
+        void set_entry(element a); //sets the matrix entry (in prime field F_p) corresponding to this node
+        entry get_entry(); //gets the matrix entry (in prime field F_p) corresponding to this node
 
     private:
         unsigned row_index; //index of matrix row corresponding to this node
+        element value;      //nonzero matrix entry corresponding to this node (element of prime field F_p)
         MapMatrixNode* next; //pointer to the next entry in the column containing this node
     };
 

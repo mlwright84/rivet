@@ -31,11 +31,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *   Singular (https://github.com/Singular/Sources/blob/spielwiese/libpolys/coeffs/modulop.cc)
  */
 
-//#pragma once --UNCOMMNET AFTER TESTING COMPLETE
+#pragma once
 
 #include <vector>
-
-#include <iostream> // TESTING ONLY
 
 
 class FFp {
