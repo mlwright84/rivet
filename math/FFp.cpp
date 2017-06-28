@@ -44,8 +44,6 @@ public:
 
     FFp(element p = 2) : p_(p)  //similar to Z_mod::initialize_Z_mod(int p) in Macaulay2 -- https://github.com/Macaulay2/M2/blob/master/M2/Macaulay2/e/ZZp.cpp
     {
-	std::cout << "creating field of order " << p_ << "\n";
-
         element x, i, q, n;
 
         // find a primitive element
@@ -61,8 +59,6 @@ public:
             g_ = i - 1; // this is the primitive element
         }
 
-		std::cout << "-- primitive element: " << g_ << "\n";
-
         // initialize exp and log tables
         exp.resize(p_);
         log.resize(p_);
@@ -72,15 +68,6 @@ public:
         }
         exp[p_ - 1] = 1;  // maybe unnecessary, but avoids special case in inv()
         log[0] = p_ - 1;  // isn't this unnecessary?
-	
-	std::cout << "exp: ";
-	for(i=0; i<p_; i++)
-	    std::cout << exp[i] << " ";
-	std::cout << "\nlog: ";
-	for(i=0; i<p_; i++)
-	    std::cout << log[i] << " ";
-	std::cout << "\n";
-	
     }
 
     element id() const { return 1; }
@@ -134,47 +121,3 @@ private:
     std::vector<element> exp;    // exp[i] = g^i (mod p)
     std::vector<element> log;    // log[n] = log base g of n in this field
 };
-
-
-//// TESTING /////
-
-int main()
-{
-    int p = 11;
-    FFp R = FFp(p);
-
-    std::cout << "Created field with order " << R.order() << "\n";
-
-    std::cout << "Negatives:\n";
-    for(int i = 0; i < p; i++) {
-        std::cout << "  -" << i << " = " << R.neg(i) << "\n";
-    }
-    std::cout << "Multiplicative Inverses:\n";
-    for(int i = 1; i < p; i++) {
-        std::cout << "  " << i << "^{-1} = " << R.inv(i) << "\n";
-    }
-	std::cout << "Addition Table:\n";
-	for(int i = 0; i < p; i++) {
-		for(int j = 0; j < p; j++)
-			std::cout << R.add(i,j) << "\t";
-		std::cout << "\n";
-	}
-	std::cout << "Subtraction Table:\n";
-	for(int i = 0; i < p; i++) {
-		for(int j = 0; j < p; j++)
-			std::cout << R.sub(i,j) << "\t";
-		std::cout << "\n";
-	}
-	std::cout << "Multiplication Table:\n";
-	for(int i = 0; i < p; i++) {
-		for(int j = 0; j < p; j++)
-			std::cout << R.mul(i,j) << "\t";
-		std::cout << "\n";
-	}
-	std::cout << "Division Table:\n";
-	for(int i = 0; i < p; i++) {
-		for(int j = 1; j < p; j++)
-			std::cout << R.div(i,j) << "\t";
-		std::cout << "\n";
-	}
-}
