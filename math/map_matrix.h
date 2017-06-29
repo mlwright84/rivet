@@ -61,7 +61,8 @@ protected:
 
     virtual void set(unsigned i, unsigned j, element value); //sets (to value) the entry in row i, column j
     virtual void clear(unsigned i, unsigned j); //clears (sets to 0) the entry in row i, column j
-    virtual bool entry(unsigned i, unsigned j); //returns true if entry (i,j) is 1, false otherwise
+    virtual bool is_nonzero(unsigned i, unsigned j); //returns true if entry (i,j) is nonzero, false otherwise
+    virtual element get_entry(unsigned i, unsigned j); //returns the value at entry (i,j)
 
     virtual void add_column(unsigned j, unsigned k); //adds column j to column k; RESULT: column j is not changed, column k contains sum of columns j and k (with mod-2 arithmetic)
 
@@ -91,7 +92,7 @@ class MapMatrix : public MapMatrix_Base {
 public:
     MapMatrix(unsigned rows, unsigned cols); //constructor to create matrix of specified size (all entries zero)
     MapMatrix(unsigned size); //constructor to create a (square) identity matrix
-    MapMatrix(std::initializer_list<std::initializer_list<int>>);
+    //MapMatrix(std::initializer_list<std::initializer_list<int>>);
     virtual ~MapMatrix(); //destructor
 
     friend std::ostream& operator<<(std::ostream&, const MapMatrix&);
@@ -101,8 +102,9 @@ public:
 
     void reserve_cols(unsigned num_cols); //requests that the columns vector have enough capacity for num_cols columns
 
-    virtual void set(unsigned i, unsigned j); //sets (to 1) the entry in row i, column j
-    virtual bool entry(unsigned i, unsigned j); //returns true if entry (i,j) is 1, false otherwise
+    virtual void set(unsigned i, unsigned j, element value); //sets (to value) the entry in row i, column j
+    virtual bool is_nonzero(unsigned i, unsigned j); //returns true if entry (i,j) is nonzero, false otherwise
+    virtual element get_entry(unsigned i, unsigned j); //returns the value at entry (i,j)
 
     virtual int low(unsigned j); //returns the "low" index in the specified column, or -1 if the column is empty
     bool col_is_empty(unsigned j); //returns true iff column j is empty (for columns that are not empty, this method is faster than low(j))
@@ -131,8 +133,9 @@ public:
     MapMatrix_Perm(const MapMatrix_Perm& other); //copy constructor
     ~MapMatrix_Perm();
 
-    void set(unsigned i, unsigned j); //sets (to 1) the entry in row i, column j
-    bool entry(unsigned i, unsigned j); //returns true if entry (i,j) is 1, false otherwise
+    void set(unsigned i, unsigned j, element value); //sets (to value) the entry in row i, column j
+    bool is_nonzero(unsigned i, unsigned j); //returns true if entry (i,j) is nonzero, false otherwise
+    element get_entry(unsigned i, unsigned j); //returns the value at entry (i,j)
 
     //reduces this matrix, fills the low array, and returns the corresponding upper-triangular matrix for the RU-decomposition
     //  NOTE: only to be called before any rows are swapped!
@@ -171,9 +174,10 @@ public:
     unsigned width() const; //returns the number of columns in the matrix
     unsigned height() const; //returns the number of rows in the matrix
 
-    void set(unsigned i, unsigned j); //sets (to 1) the entry in row i, column j
+    void set(unsigned i, unsigned j, element value); //sets (to value) the entry in row i, column j
     void clear(unsigned i, unsigned j); //clears (sets to 0) the entry in row i, column j
-    bool entry(unsigned i, unsigned j); //returns true if entry (i,j) is 1, false otherwise
+    bool is_nonzero(unsigned i, unsigned j); //returns true if entry (i,j) is nonzero, false otherwise
+    element get_entry(unsigned i, unsigned j); //returns the value at entry (i,j)
 
     void add_row(unsigned j, unsigned k); //adds row j to row k; RESULT: row j is not changed, row k contains sum of rows j and k (with mod-2 arithmetic)
 

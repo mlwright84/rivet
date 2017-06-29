@@ -76,7 +76,7 @@ MapMatrix_Base::MapMatrix_Base(unsigned size)
     , num_rows(size)
 {
     for (unsigned i = 0; i < size; i++) {
-        MapMatrixNode* newnode = new MapMatrixNode(i);
+        MapMatrixNode* newnode = new MapMatrixNode(i, 1);
         columns[i] = newnode;
     }
 }
@@ -106,9 +106,15 @@ unsigned MapMatrix_Base::height() const
     return num_rows;
 }
 
-//sets (to 1) the entry in row i, column j
+//sets (to value) the entry in row i, column j
 void MapMatrix_Base::set(unsigned i, unsigned j, element value)
 {
+    //set a value of 0 by clearing the entry
+    if(value == 0) {
+        clear(i, j);
+        return;
+    }
+
     //make sure this operation is valid
     if (columns.size() <= j)
         throw std::runtime_error("MapMatrix_Base::set(): attempting to set column past end of matrix");
@@ -117,7 +123,7 @@ void MapMatrix_Base::set(unsigned i, unsigned j, element value)
 
     //if the column is empty, then create a node
     if (columns[j] == NULL) {
-        columns[j] = new MapMatrixNode(i);
+        columns[j] = new MapMatrixNode(i, value);
         return;
     }
 
@@ -126,12 +132,13 @@ void MapMatrix_Base::set(unsigned i, unsigned j, element value)
 
     //see if node that we would insert already exists in the first position
     if (current->get_row() == i) {
-        return; //avoid duplicate nodes
+        current->set_value(value);
+        return;
     }
 
     //see if we need to insert a new node into the first position
     if (current->get_row() < i) {
-        MapMatrixNode* newnode = new MapMatrixNode(i);
+        MapMatrixNode* newnode = new MapMatrixNode(i, value);
         newnode->set_next(current);
         columns[j] = newnode;
         return;
@@ -143,12 +150,13 @@ void MapMatrix_Base::set(unsigned i, unsigned j, element value)
 
         if (next->get_row() == i) //then node aready exists
         {
-            return; //avoid duplicate nodes
+            next->set_value(value);
+            return;
         }
 
         if (next->get_row() < i) //then insert new node between current and next
         {
-            MapMatrixNode* newnode = new MapMatrixNode(i);
+            MapMatrixNode* newnode = new MapMatrixNode(i, value);
             newnode->set_next(next);
             current->set_next(newnode);
 
@@ -160,7 +168,7 @@ void MapMatrix_Base::set(unsigned i, unsigned j, element value)
     }
 
     //if we get here, then append a new node to the end of the list
-    MapMatrixNode* newnode = new MapMatrixNode(i);
+    MapMatrixNode* newnode = new MapMatrixNode(i, value);
     current->set_next(newnode);
 } //end set()
 
@@ -209,14 +217,14 @@ void MapMatrix_Base::clear(unsigned i, unsigned j)
     }
 } //end clear()
 
-//returns true if entry (i,j) is 1, false otherwise
-bool MapMatrix_Base::entry(unsigned i, unsigned j)
+//returns true if entry (i,j) is nonzero, false otherwise
+bool MapMatrix_Base::is_nonzero(unsigned i, unsigned j)
 {
     //make sure this entry is valid
     if (columns.size() <= j)
-        throw std::runtime_error("MapMatrix_Base::entry(): attempting to check entry in a column past end of matrix");
+        throw std::runtime_error("MapMatrix_Base::is_nonzero(): attempting to check entry in a column past end of matrix");
     if (num_rows <= i)
-        throw std::runtime_error("MapMatrix_Base::entry(): attempting to check entry in a row past end of matrix");
+        throw std::runtime_error("MapMatrix_Base::is_nonzero(): attempting to check entry in a row past end of matrix");
 
     //get initial node pointer
     MapMatrixNode* np = columns[j];
@@ -235,7 +243,35 @@ bool MapMatrix_Base::entry(unsigned i, unsigned j)
 
     //if we get here, then we didn't find the entry
     return false;
-} //end entry()
+} //end is_nonzero()
+
+//returns the value at entry (i,j)
+element MapMatrix_Base::get_entry(unsigned i, unsigned j)
+{
+    //make sure this entry is valid
+    if (columns.size() <= j)
+        throw std::runtime_error("MapMatrix_Base::get_entry(): attempting to check entry in a column past end of matrix");
+    if (num_rows <= i)
+        throw std::runtime_error("MapMatrix_Base::get_entry(): attempting to check entry in a row past end of matrix");
+
+    //get initial node pointer
+    MapMatrixNode* np = columns[j];
+
+    //loop while there is another node to check
+    while (np != NULL) {
+        if (np->get_row() < i) //then we won't find row i because row entrys are sorted in descending order
+            return 0;
+
+        if (np->get_row() == i) //then we found the row we wanted
+            return np->get_value();
+
+        //if we are still looking, then get the next node
+        np = np->get_next();
+    }
+
+    //if we get here, then we didn't find the entry
+    return 0;
+} //end get_entry()
 
 //adds column j to column k
 //  RESULT: column j is not changed, column k contains sum of columns j and k (with mod-2 arithmetic)
@@ -339,6 +375,7 @@ MapMatrix::MapMatrix(unsigned size)
 {
 }
 
+/*This function needs to be updated to support prime field entries
 MapMatrix::MapMatrix(std::initializer_list<std::initializer_list<int>> values)
     : MapMatrix_Base(values.size(),
           std::accumulate(values.begin(), values.end(), 0U,
@@ -358,7 +395,7 @@ MapMatrix::MapMatrix(std::initializer_list<std::initializer_list<int>> values)
             ++col_it;
         }
     }
-}
+}*/
 
 bool MapMatrix::operator==(MapMatrix& other)
 {
@@ -368,7 +405,7 @@ bool MapMatrix::operator==(MapMatrix& other)
         return false;
     for (unsigned row = 0; row < height(); row++)
         for (unsigned col = 0; col < width(); col++)
-            if (entry(row, col) != other.entry(row, col))
+            if (get_entry(row, col) != other.get_entry(row, col))
                 return false;
 
     return true;
@@ -397,19 +434,25 @@ void MapMatrix::reserve_cols(unsigned num_cols)
     columns.reserve(num_cols);
 }
 
-//sets (to 1) the entry in row i, column j
-void MapMatrix::set(unsigned i, unsigned j)
+//sets (to value) the entry in row i, column j
+void MapMatrix::set(unsigned i, unsigned j, element value)
 {
-    MapMatrix_Base::set(i, j);
+    MapMatrix_Base::set(i, j, value);
 }
 
-//returns true if entry (i,j) is 1, false otherwise
-bool MapMatrix::entry(unsigned i, unsigned j)
+//returns true if entry (i,j) is nonzero, false otherwise
+bool MapMatrix::is_nonzero(unsigned i, unsigned j)
 {
-    return MapMatrix_Base::entry(i, j);
+    return MapMatrix_Base::is_nonzero(i, j);
 }
 
-//returns the "low" index in the specified column, or 0 if the column is empty or does not exist
+//returns the value at entry (i,j)
+bool MapMatrix::get_entry(unsigned i, unsigned j)
+{
+    return MapMatrix_Base::get_entry(i, j);
+}
+
+//returns the "low" index in the specified column, or -1 if the column is empty or does not exist
 int MapMatrix::low(unsigned j)
 {
     //make sure this query is valid
@@ -529,14 +572,14 @@ void MapMatrix::copy_cols_from(MapMatrix* other, int first, int last, unsigned o
         MapMatrixNode* other_node = other->columns[j];
         if (other_node != NULL) {
             //create the first node in this column
-            MapMatrixNode* cur_node = new MapMatrixNode(other_node->get_row() + offset);
+            MapMatrixNode* cur_node = new MapMatrixNode(other_node->get_row() + offset, other_node->get_value());
             columns.push_back(cur_node);
 
             //create all other nodes in this column
             other_node = other_node->get_next();
             while (other_node != NULL)
             {
-                MapMatrixNode* new_node = new MapMatrixNode(other_node->get_row() + offset);
+                MapMatrixNode* new_node = new MapMatrixNode(other_node->get_row() + offset, other_node->get_value());
                 cur_node->set_next(new_node);
                 cur_node = new_node;
                 other_node = other_node->get_next();
@@ -552,14 +595,14 @@ void MapMatrix::copy_cols_same_indexes(MapMatrix* other, int first, int last)
         MapMatrixNode* other_node = other->columns[j];
         if (other_node != NULL) {
             //create the first node in this column
-            MapMatrixNode* cur_node = new MapMatrixNode(other_node->get_row());
+            MapMatrixNode* cur_node = new MapMatrixNode(other_node->get_row(), other_node->get_value());
             columns[j] = (cur_node);
 
             //create all other nodes in this column
             other_node = other_node->get_next();
             while (other_node != NULL)
             {
-                MapMatrixNode* new_node = new MapMatrixNode(other_node->get_row());
+                MapMatrixNode* new_node = new MapMatrixNode(other_node->get_row(), other_node->get_value());
                 cur_node->set_next(new_node);
                 cur_node = new_node;
                 other_node = other_node->get_next();
@@ -612,7 +655,7 @@ std::ostream& operator<<(std::ostream& out, const MapMatrix& matrix)
         return out;
     }
 
-    //create a 2D array of booleans to temporarily store the matrix
+    //create a 2D array of ints to temporarily store the matrix
     bool_array mx(matrix.num_rows, matrix.columns.size());
     for (unsigned i = 0; i < matrix.num_rows; i++)
         for (unsigned j = 0; j < matrix.columns.size(); j++)
@@ -685,13 +728,13 @@ MapMatrix_Perm::MapMatrix_Perm(const MapMatrix_Perm& other)
         MapMatrixNode* other_node = other.columns[j];
         if (other_node != NULL) {
             //create the first node in this column
-            MapMatrixNode* cur_node = new MapMatrixNode(other_node->get_row());
+            MapMatrixNode* cur_node = new MapMatrixNode(other_node->get_row(), other_node->get_value());
             columns[j] = cur_node;
 
             //create all other nodes in this column
             other_node = other_node->get_next();
             while (other_node != NULL) {
-                MapMatrixNode* new_node = new MapMatrixNode(other_node->get_row());
+                MapMatrixNode* new_node = new MapMatrixNode(other_node->get_row(), other_node->get_value());
                 cur_node->set_next(new_node);
                 cur_node = new_node;
                 other_node = other_node->get_next();
@@ -704,17 +747,23 @@ MapMatrix_Perm::~MapMatrix_Perm()
 {
 }
 
-//sets (to 1) the entry in row i, column j
+//sets (to value) the entry in row i, column j
 //NOTE: to be used for matrix construction only; does not update low array
-void MapMatrix_Perm::set(unsigned i, unsigned j)
+void MapMatrix_Perm::set(unsigned i, unsigned j, element value)
 {
-    MapMatrix::set(mrep[i], j);
+    MapMatrix::set(mrep[i], j, value);
 }
 
-//returns true if entry (i,j) is 1, false otherwise
-bool MapMatrix_Perm::entry(unsigned i, unsigned j)
+//returns true if entry (i,j) is nonzero, false otherwise
+bool MapMatrix_Perm::is_nonzero(unsigned i, unsigned j)
 {
-    return MapMatrix::entry(mrep[i], j);
+    return MapMatrix::is_nonzero(mrep[i], j);
+}
+
+//returns the value at entry (i,j)
+bool MapMatrix_Perm::get_entry(unsigned i, unsigned j)
+{
+    return MapMatrix::get_entry(mrep[i], j);
 }
 
 //reduces this matrix and returns the corresponding upper-triangular matrix for the RU-decomposition
@@ -845,13 +894,13 @@ void MapMatrix_Perm::rebuild(MapMatrix_Perm* reference, std::vector<unsigned>& c
         MapMatrixNode* ref_node = reference->columns[j];
         if (ref_node != NULL) {
             //create the first node in this column
-            MapMatrixNode* cur_node = new MapMatrixNode(ref_node->get_row());
+            MapMatrixNode* cur_node = new MapMatrixNode(ref_node->get_row(), ref_node->get_value());
             columns[col_order[j]] = cur_node;
 
             //create all other nodes in this column
             ref_node = ref_node->get_next();
             while (ref_node != NULL) {
-                MapMatrixNode* new_node = new MapMatrixNode(ref_node->get_row());
+                MapMatrixNode* new_node = new MapMatrixNode(ref_node->get_row(), ref_node->get_value());
                 cur_node->set_next(new_node);
                 cur_node = new_node;
                 ref_node = ref_node->get_next();
@@ -901,7 +950,7 @@ void MapMatrix_Perm::rebuild(MapMatrix_Perm* reference, std::vector<unsigned>& c
     for (unsigned j = 0; j < columns.size(); j++) {
         MapMatrixNode* ref_node = reference->columns[j];
         while (ref_node != NULL) {
-            MapMatrix::set(row_order[ref_node->get_row()], col_order[j]);
+            MapMatrix::set(row_order[ref_node->get_row()], col_order[j], ref_node->get_value());
             ref_node = ref_node->get_next();
         }
     }
@@ -1009,13 +1058,13 @@ MapMatrix_RowPriority_Perm::MapMatrix_RowPriority_Perm(const MapMatrix_RowPriori
         MapMatrixNode* other_node = other.columns[j];
         if (other_node != NULL) {
             //create the first node in this column
-            MapMatrixNode* cur_node = new MapMatrixNode(other_node->get_row());
+            MapMatrixNode* cur_node = new MapMatrixNode(other_node->get_row(), other_node->get_value());
             columns[j] = cur_node;
 
             //create all other nodes in this column
             other_node = other_node->get_next();
             while (other_node != NULL) {
-                MapMatrixNode* new_node = new MapMatrixNode(other_node->get_row());
+                MapMatrixNode* new_node = new MapMatrixNode(other_node->get_row(), other_node->get_value());
                 cur_node->set_next(new_node);
                 cur_node = new_node;
                 other_node = other_node->get_next();
@@ -1038,9 +1087,9 @@ unsigned MapMatrix_RowPriority_Perm::height() const
     return MapMatrix_Base::width();
 }
 
-void MapMatrix_RowPriority_Perm::set(unsigned i, unsigned j)
+void MapMatrix_RowPriority_Perm::set(unsigned i, unsigned j, element value)
 {
-    MapMatrix_Base::set(mrep[j], i);
+    MapMatrix_Base::set(mrep[j], i, value);
 }
 
 void MapMatrix_RowPriority_Perm::clear(unsigned i, unsigned j)
@@ -1048,9 +1097,14 @@ void MapMatrix_RowPriority_Perm::clear(unsigned i, unsigned j)
     MapMatrix_Base::clear(mrep[j], i);
 }
 
-bool MapMatrix_RowPriority_Perm::entry(unsigned i, unsigned j)
+bool MapMatrix_RowPriority_Perm::is_nonzero(unsigned i, unsigned j)
 {
-    return MapMatrix_Base::entry(mrep[j], i);
+    return MapMatrix_Base::is_nonzero(mrep[j], i);
+}
+
+element MapMatrix_RowPriority_Perm::get_entry(unsigned i, unsigned j)
+{
+    return MapMatrix_Base::get_entry(mrep[j], i);
 }
 
 //adds row j to row k; RESULT: row j is not changed, row k contains sum of rows j and k (with mod-2 arithmetic)
