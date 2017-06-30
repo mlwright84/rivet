@@ -64,16 +64,18 @@ element MapMatrix_Base::MapMatrixNode::get_value()
 }
 
 //constructor to create matrix of specified size (all entries zero)
-MapMatrix_Base::MapMatrix_Base(unsigned rows, unsigned cols)
+MapMatrix_Base::MapMatrix_Base(unsigned rows, unsigned cols, FFp& field)
     : columns(cols)
     , num_rows(rows)
+    , F(field)
 {
 }
 
 //constructor to create a (square) identity matrix
-MapMatrix_Base::MapMatrix_Base(unsigned size)
+MapMatrix_Base::MapMatrix_Base(unsigned size, FFp& field)
     : columns(size)
     , num_rows(size)
+    , F(field)
 {
     for (unsigned i = 0; i < size; i++) {
         MapMatrixNode* newnode = new MapMatrixNode(i, 1);
@@ -274,14 +276,44 @@ element MapMatrix_Base::get_entry(unsigned i, unsigned j)
 } //end get_entry()
 
 //adds column j to column k
-//  RESULT: column j is not changed, column k contains sum of columns j and k (with mod-2 arithmetic)
+//  RESULT: column j is not changed, column k contains sum of columns j and k (with arithmetic in field F)
 void MapMatrix_Base::add_column(unsigned j, unsigned k)
+{
+    add_multiple(F.id(), j, k)
+}
+
+//adds a multiple of column j to column k, in order to eliminate the low entry in column k
+//  RESULT: column j is not changed, column k contains sum of k and m times column j (with aritmetic in field F)
+//          and the low entry in column k has been zeroed
+void MapMatrix_Base::add_eliminate_low(unsigned j, unsigned k)
 {
     //make sure this operation is valid
     if (columns.size() <= j || columns.size() <= k)
-        throw std::runtime_error("MapMatrix_Base::add_column(): attempting to access column past end of matrix");
+        throw std::runtime_error("MapMatrix_Base::add_eliminate_low(): attempting to access column past end of matrix");
+
+    //compute the multiple
+    element a = columns[j]->get_value(); //low element in column j
+    element w = columns[k]->get_value(); //low element in column k
+
+    element m = F.mul(F.inv(a), F.neg(w)); //satisfies a*m + w = 0 in field F
+
+    //now add the columns
+    add_multiple(m, j, k);
+} //end add_eliminate_low()
+
+//adds m copies of column j to column k
+//  RESULT: column j is not changed, column k contains sum of k and m times columns j (with arithmetic in field F)
+void MapMatrix_Base::add_multiple(element m, unsigned j, unsigned k)
+{
+    //make sure this operation is valid
+    if (columns.size() <= j || columns.size() <= k)
+        throw std::runtime_error("MapMatrix_Base::add_multiple(): attempting to access column past end of matrix");
     if (j == k)
-        throw std::runtime_error("MapMatrix_Base::add_column(): adding a column to itself");
+        throw std::runtime_error("MapMatrix_Base::add_multiple(): adding a column to itself");
+    if (!F.is_nonzero(m)) {
+        debug() << "Warning: adding zero times a column in MapMatrix_Base::add_multiple()";
+        return;
+    }
 
     //pointers
     MapMatrixNode* jnode = columns[j]; //points to next node from column j that we will add to column k
@@ -292,35 +324,39 @@ void MapMatrix_Base::add_column(unsigned j, unsigned k)
         //now it is save to dereference jnode (*jnode)...
         unsigned row = jnode->get_row();
 
+        //compute the element of F that must be added to k[row]
+        element mj = F.mul(m, jnode->get_value());
+
         //loop through entries in column k, starting at the current position
         bool added = false;
 
-        if (columns[k] == NULL) //then column k is empty, so insert initial node
-        {
-            MapMatrixNode* newnode = new MapMatrixNode(row);
+        if (columns[k] == NULL) { //then column k is empty, so insert initial node
+            MapMatrixNode* newnode = new MapMatrixNode(row, mj);
             columns[k] = newnode;
             khandle = newnode;
 
             added = true; //proceed with next element from column j
         }
 
-        if (!added && khandle == NULL) //then we haven't yet added anything to column k (but if we get here, column k is nonempty)
-        {
-            if ((*columns[k]).get_row() == row) //then remove this node (since 1+1=0)
-            {
-                MapMatrixNode* next = (*columns[k]).get_next();
-                delete columns[k];
-                columns[k] = next;
+        if (!added && khandle == NULL) { //then we haven't yet added anything to column k (but if we get here, column k is nonempty)
+            if ((*columns[k]).get_row() == row) { //then add to this entry in column k
+                element sum = F.add(mj, (*columns[k]).get_value());
+
+                if (F.is_nonzero(sum)) { //then store sum in this entry of column k
+                    (*columns[k]).set_value(sum);
+                } else { //then sum is zero, so remove this entry of column k
+                    MapMatrixNode* next = (*columns[k]).get_next();
+                    delete columns[k];
+                    columns[k] = next;
+                }
                 added = true; //proceed with next element from column j
-            } else if ((*columns[k]).get_row() < row) //then insert new initial node into column k
-            {
-                MapMatrixNode* newnode = new MapMatrixNode(row);
+            } else if ((*columns[k]).get_row() < row) { //then insert new initial node into column k
+                MapMatrixNode* newnode = new MapMatrixNode(row, mj);
                 newnode->set_next(columns[k]);
                 columns[k] = newnode;
                 khandle = columns[k];
                 added = true; //proceed with next element from column j
-            } else //then move to next node in column k
-            {
+            } else { //then move to next node in column k
                 khandle = columns[k];
                 //now we want to enter the following while loop
             }
@@ -331,47 +367,51 @@ void MapMatrix_Base::add_column(unsigned j, unsigned k)
             //consider the next node
             MapMatrixNode* next = khandle->get_next();
 
-            if (next->get_row() == row) //then remove the next node (since 1+1=0)
-            {
-                khandle->set_next(next->get_next());
-                delete next;
+            if (next->get_row() == row) { //then add to this entry in column k
+                element sum = F.add(mj, next->get_value());
+
+                if (F.is_nonzero(sum)) { //then store sum in this entry of column k
+                    next->set_value(sum);
+                } else { //then sum is zero, so remove this entry of column k
+                    khandle->set_next(next->get_next());
+                    delete next;
+                }
                 added = true; //proceed with next element from column j
-            } else if (next->get_row() < row) //then insert new initial node into column k
+            } else if (next->get_row() < row) { //then insert new node into column k
             {
-                MapMatrixNode* newnode = new MapMatrixNode(row);
+                MapMatrixNode* newnode = new MapMatrixNode(row, mj);
                 newnode->set_next(next);
                 khandle->set_next(newnode);
                 added = true; //proceed with next element from column j
-            } else //then next->get_row() > row, so move to next node in column k
-            {
+            } else { //then next->get_row() > row, so move to next node in column k
                 khandle = next;
             }
         } //end while
 
-        if (!added && (khandle->get_next() == NULL)) //then we have reached the end of the list, and we should append a new node
-        {
-            MapMatrixNode* newnode = new MapMatrixNode(row);
+        if (!added && (khandle->get_next() == NULL)) { //then we have reached the end of column k, and we should append a new node
+            MapMatrixNode* newnode = new MapMatrixNode(row, mj);
             khandle->set_next(newnode);
             khandle = newnode;
+            //added = true, but there are no further if statements
         }
 
         //move to the next entry in column j
         jnode = jnode->get_next();
     } //end while(jnode != NULL)
 
-} //end add_column()
+} //end add_multiple()
 
 /********** implementation of class MapMatrix, for column-sparse matrices **********/
 
 //constructor that sets initial size of matrix
-MapMatrix::MapMatrix(unsigned rows, unsigned cols)
-    : MapMatrix_Base(rows, cols)
+MapMatrix::MapMatrix(unsigned rows, unsigned cols, FFp& field)
+    : MapMatrix_Base(rows, cols, field)
 {
 }
 
 //constructor to create a (square) identity matrix
-MapMatrix::MapMatrix(unsigned size)
-    : MapMatrix_Base(size)
+MapMatrix::MapMatrix(unsigned size, FFp& field)
+    : MapMatrix_Base(size, field)
 {
 }
 
@@ -401,7 +441,7 @@ bool MapMatrix::operator==(MapMatrix& other)
 {
     //TODO: make fast once we choose a representation
 
-    if (height() != other.height() || width() != other.width())
+    if (height() != other.height() || width() != other.width()) //TODO: also compare fields
         return false;
     for (unsigned row = 0; row < height(); row++)
         for (unsigned col = 0; col < width(); col++)
@@ -473,15 +513,12 @@ bool MapMatrix::col_is_empty(unsigned j)
     return (columns[j] == NULL);
 }
 
-//adds column j to column k; RESULT: column j is not changed, column k contains sum of columns j and k (with mod-2 arithmetic)
-void MapMatrix::add_column(unsigned j, unsigned k)
+//adds a multiple of column j from MapMatrix* other to column k of this matrix, so that the low entry in column k is zeroed
+void MapMatrix::add_eliminate_low(MapMatrix* other, unsigned j, unsigned k)
 {
-    MapMatrix_Base::add_column(j, k);
-}
 
-//adds column j from MapMatrix* other to column k of this matrix
-void MapMatrix::add_column(MapMatrix* other, unsigned j, unsigned k)
-{
+    FIX THIS!!!!!!!!!!!!!!!!!!!!!!!!
+
     //make sure this operation is valid
     if (other->columns.size() <= j || columns.size() <= k)
         throw std::runtime_error("MapMatrix::add_column(): attempting to access column(s) past end of matrix");
@@ -687,8 +724,8 @@ std::ostream& operator<<(std::ostream& out, const MapMatrix& matrix)
 
 /********** implementation of class MapMatrix_Perm, supports row swaps (and stores a low array) **********/
 
-MapMatrix_Perm::MapMatrix_Perm(unsigned rows, unsigned cols)
-    : MapMatrix(rows, cols)
+MapMatrix_Perm::MapMatrix_Perm(unsigned rows, unsigned cols, FFp& field)
+    : MapMatrix(rows, cols, field)
     , perm(rows)
     , mrep(rows)
     , low_by_row(rows, -1)
@@ -701,8 +738,8 @@ MapMatrix_Perm::MapMatrix_Perm(unsigned rows, unsigned cols)
     }
 }
 
-MapMatrix_Perm::MapMatrix_Perm(unsigned size)
-    : MapMatrix(size)
+MapMatrix_Perm::MapMatrix_Perm(unsigned size, FFp& field)
+    : MapMatrix(size, field)
     , perm(size)
     , mrep(size)
     , low_by_row(size, -1)
@@ -717,7 +754,7 @@ MapMatrix_Perm::MapMatrix_Perm(unsigned size)
 
 //copy constructor
 MapMatrix_Perm::MapMatrix_Perm(const MapMatrix_Perm& other)
-    : MapMatrix(other.height(), other.width())
+    : MapMatrix(other.height(), other.width(), other.F)
     , perm(other.perm)
     , mrep(other.mrep)
     , low_by_row(other.low_by_row)
@@ -1035,8 +1072,8 @@ void MapMatrix_Perm::check_lows()
 
 /********** implementation of class MapMatrix_RowPriority_Perm **********/
 
-MapMatrix_RowPriority_Perm::MapMatrix_RowPriority_Perm(unsigned size)
-    : MapMatrix_Base(size)
+MapMatrix_RowPriority_Perm::MapMatrix_RowPriority_Perm(unsigned size, FFp& field)
+    : MapMatrix_Base(size, field)
     , perm(size)
     , mrep(size)
 {
@@ -1049,7 +1086,7 @@ MapMatrix_RowPriority_Perm::MapMatrix_RowPriority_Perm(unsigned size)
 
 //copy constructor
 MapMatrix_RowPriority_Perm::MapMatrix_RowPriority_Perm(const MapMatrix_RowPriority_Perm& other)
-    : MapMatrix_Base(other.height())
+    : MapMatrix_Base(other.height(), other.F)
     , perm(other.perm)
     , mrep(other.mrep)
 {

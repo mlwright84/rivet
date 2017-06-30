@@ -52,8 +52,8 @@ class IndexMatrix;
 //written here using column-priority terminology, but this class is meant to be inherited, not instantiated directly
 class MapMatrix_Base {
 protected:
-    MapMatrix_Base(unsigned rows, unsigned cols); //constructor to create matrix of specified size (all entries zero)
-    MapMatrix_Base(unsigned size); //constructor to create a (square) identity matrix
+    MapMatrix_Base(unsigned rows, unsigned cols, FFp& field); //constructor to create matrix of specified size (all entries zero)
+    MapMatrix_Base(unsigned size, FFp& field); //constructor to create a (square) identity matrix
     virtual ~MapMatrix_Base(); //destructor
 
     virtual unsigned width() const; //returns the number of columns in the matrix
@@ -64,7 +64,9 @@ protected:
     virtual bool is_nonzero(unsigned i, unsigned j); //returns true if entry (i,j) is nonzero, false otherwise
     virtual element get_entry(unsigned i, unsigned j); //returns the value at entry (i,j)
 
-    virtual void add_column(unsigned j, unsigned k); //adds column j to column k; RESULT: column j is not changed, column k contains sum of columns j and k (with mod-2 arithmetic)
+    virtual void add_column(unsigned j, unsigned k); //adds column j to column k; RESULT: column j is not changed, column k contains sum of columns j and k (with arithmetic in field F)
+    virtual void add_eliminate_low(unsigned j, unsigned k); //adds a multiple of column j to column k, in order to eliminate the low entry in column k; column j is not changed
+    virtual void add_multiple(element m, unsigned j, unsigned k); //adds m copies of column j to column k; column j is not changed
 
     class MapMatrixNode { //subclass for the nodes in the MapMatrix
     public:
@@ -83,15 +85,15 @@ protected:
     };
 
     std::vector<MapMatrixNode*> columns; //vector of pointers to nodes representing columns of the matrix
-
     unsigned num_rows; //number of rows in the matrix
+    FFp& F; //finite field in which the entries in this matrix live
 };
 
 //MapMatrix is a column-priority matrix designed for standard persistence calculations
 class MapMatrix : public MapMatrix_Base {
 public:
-    MapMatrix(unsigned rows, unsigned cols); //constructor to create matrix of specified size (all entries zero)
-    MapMatrix(unsigned size); //constructor to create a (square) identity matrix
+    MapMatrix(unsigned rows, unsigned cols, FFp& field); //constructor to create matrix of specified size (all entries zero)
+    MapMatrix(unsigned size, FFp& field); //constructor to create a (square) identity matrix
     //MapMatrix(std::initializer_list<std::initializer_list<int>>);
     virtual ~MapMatrix(); //destructor
 
@@ -109,8 +111,7 @@ public:
     virtual int low(unsigned j); //returns the "low" index in the specified column, or -1 if the column is empty
     bool col_is_empty(unsigned j); //returns true iff column j is empty (for columns that are not empty, this method is faster than low(j))
 
-    void add_column(unsigned j, unsigned k); //adds column j to column k; RESULT: column j is not changed, column k contains sum of columns j and k (with mod-2 arithmetic)
-    void add_column(MapMatrix* other, unsigned j, unsigned k); //adds column j from MapMatrix* other to column k of this matrix
+    void add_eliminate_low(MapMatrix* other, unsigned j, unsigned k); //adds column j from MapMatrix* other to column k of this matrix
 
     //copies NONZERO columns with indexes in [first, last] from other, appending them to this matrix to the right of all existing columns
     //  all row indexes in copied columns are increased by offset
@@ -128,8 +129,8 @@ public:
 class MapMatrix_RowPriority_Perm; //forward declaration
 class MapMatrix_Perm : public MapMatrix {
 public:
-    MapMatrix_Perm(unsigned rows, unsigned cols);
-    MapMatrix_Perm(unsigned size);
+    MapMatrix_Perm(unsigned rows, unsigned cols, FFp& field);
+    MapMatrix_Perm(unsigned size, FFp& field);
     MapMatrix_Perm(const MapMatrix_Perm& other); //copy constructor
     ~MapMatrix_Perm();
 
@@ -167,7 +168,7 @@ protected:
 //MapMatrix stored in row-priority format, with row/column permutations, designed for upper-triangular matrices in vineyard updates
 class MapMatrix_RowPriority_Perm : public MapMatrix_Base {
 public:
-    MapMatrix_RowPriority_Perm(unsigned size); //constructs the identity matrix of specified size
+    MapMatrix_RowPriority_Perm(unsigned size, FFp& field); //constructs the identity matrix of specified size
     MapMatrix_RowPriority_Perm(const MapMatrix_RowPriority_Perm& other); //copy constructor
     ~MapMatrix_RowPriority_Perm();
 
