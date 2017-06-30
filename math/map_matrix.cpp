@@ -830,8 +830,8 @@ MapMatrix_RowPriority_Perm* MapMatrix_Perm::decompose_RU()
         //while column j is nonempty and its low number is found in the low array, do column operations
         while (columns[j] != NULL && low_by_row[columns[j]->get_row()] >= 0) {
             int c = low_by_row[columns[j]->get_row()];
-            add_column(c, j);
-            U->add_row(j, c); //perform the opposite row operation on U
+            add_column(c, j); fix this!
+            U->add_row(j, c); fix this! //perform the opposite row operation on U
         }
 
         if (columns[j] != NULL) //then column is still nonempty, so update lows
