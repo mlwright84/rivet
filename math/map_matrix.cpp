@@ -714,15 +714,15 @@ std::ostream& operator<<(std::ostream& out, const MapMatrix& matrix)
     bool_array mx(matrix.num_rows, matrix.columns.size());
     for (unsigned i = 0; i < matrix.num_rows; i++)
         for (unsigned j = 0; j < matrix.columns.size(); j++)
-            mx.at(i, j) = false;
+            mx.at(i, j) = 0;
 
     //traverse the linked lists in order to fill the 2D array
     MapMatrix::MapMatrixNode* current;
     for (unsigned j = 0; j < matrix.columns.size(); j++) {
         current = matrix.columns[j];
         while (current != NULL) {
-            int row = current->get_row();
-            mx.at(row, j) = true;
+            unsigned row = current->get_row();
+            mx.at(row, j) = current->get_value();
             current = current->get_next();
         }
     }
@@ -730,10 +730,7 @@ std::ostream& operator<<(std::ostream& out, const MapMatrix& matrix)
     for (unsigned i = 0; i < matrix.num_rows; i++) {
         out << "        |";
         for (unsigned j = 0; j < matrix.columns.size(); j++) {
-            if (mx.at(i, j))
-                out << " 1";
-            else
-                out << " 0";
+            out << " " << mx.at(i, j);
         }
         out << " |\n";
     }
@@ -1024,15 +1021,15 @@ void MapMatrix_Perm::print()
     bool_array mx(num_rows, columns.size());
     for (unsigned i = 0; i < num_rows; i++)
         for (unsigned j = 0; j < columns.size(); j++)
-            mx.at(i, j) = false;
+            mx.at(i, j) = 0;
 
     //traverse the linked lists in order to fill the 2D array
     MapMatrixNode* current;
     for (unsigned j = 0; j < columns.size(); j++) {
         current = columns[j];
         while (current != NULL) {
-            int row = current->get_row();
-            mx.at(perm[row], j) = true;
+            unsigned row = current->get_row();
+            mx.at(perm[row], j) = current->get_value();
             current = current->get_next();
         }
     }
@@ -1042,10 +1039,7 @@ void MapMatrix_Perm::print()
         Debug qd = debug(true);
         qd << "        |";
         for (unsigned j = 0; j < columns.size(); j++) {
-            if (mx.at(i, j))
-                qd << " 1";
-            else
-                qd << " 0";
+            qd << " " << mx.at(i, j);
         }
         qd << " |";
     }
@@ -1207,7 +1201,7 @@ void MapMatrix_RowPriority_Perm::print()
     bool_array mx(columns.size(), num_rows);
     for (unsigned i = 0; i < columns.size(); i++)
         for (unsigned j = 0; j < num_rows; j++)
-            mx.at(i, j) = false;
+            mx.at(i, j) = 0;
 
     //traverse the linked lists in order to fill the 2D array
     MapMatrixNode* current;
@@ -1215,7 +1209,7 @@ void MapMatrix_RowPriority_Perm::print()
         current = columns[j];
         while (current != NULL) {
             unsigned row = current->get_row();
-            mx.at(j, perm[row]) = true;
+            mx.at(j, perm[row]) = current->get_value();
             current = current->get_next();
         }
     }
@@ -1225,10 +1219,7 @@ void MapMatrix_RowPriority_Perm::print()
         Debug qd = debug(true);
         qd << "        |";
         for (unsigned j = 0; j < columns.size(); j++) {
-            if (mx.at(i, j))
-                qd << " 1";
-            else
-                qd << " 0";
+            qd << " " << mx.at(i, j);
         }
         qd << " |";
     }

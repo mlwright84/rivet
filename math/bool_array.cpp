@@ -29,4 +29,4 @@ bool_array::bool_array(unsigned long rows, unsigned long cols)
 {
 }
 
-bool& bool_array::at(unsigned long row, unsigned long col) { return array[row * cols + col]; }
+int& bool_array::at(unsigned long row, unsigned long col) { return array[row * cols + col]; }
