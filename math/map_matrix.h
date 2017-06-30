@@ -65,7 +65,6 @@ protected:
     virtual element get_entry(unsigned i, unsigned j); //returns the value at entry (i,j)
 
     virtual void add_column(unsigned j, unsigned k); //adds column j to column k; RESULT: column j is not changed, column k contains sum of columns j and k (with arithmetic in field F)
-    virtual void add_eliminate_low(unsigned j, unsigned k); //adds a multiple of column j to column k, in order to eliminate the low entry in column k; column j is not changed
     virtual void add_multiple(element m, unsigned j, unsigned k); //adds m copies of column j to column k; column j is not changed
 
     class MapMatrixNode { //subclass for the nodes in the MapMatrix
@@ -111,6 +110,7 @@ public:
     virtual int low(unsigned j); //returns the "low" index in the specified column, or -1 if the column is empty
     bool col_is_empty(unsigned j); //returns true iff column j is empty (for columns that are not empty, this method is faster than low(j))
 
+	void add_eliminate_low(unsigned j, unsigned k); //adds a multiple of column j to column k, in order to eliminate the low entry in column k; column j is not changed
     void add_eliminate_low(MapMatrix* other, unsigned j, unsigned k); //adds column j from MapMatrix* other to column k of this matrix
 
     //copies NONZERO columns with indexes in [first, last] from other, appending them to this matrix to the right of all existing columns
