@@ -624,7 +624,7 @@ void SimplexTree::print_bifiltration(STNode* node, std::string parent, int cur_d
 void SimplexTree::write_bigraded_M2_file(std::string filename)
 {
     //open the file
-    std::string m2filename = filename.substring(0, filename.size() - 4).append(".bigraded.m2");
+    std::string m2filename = filename.substr(0, filename.size() - 4).append(".bigraded.m2");
     std::ofstream m2file(m2filename);
 
     if(m2file.is_open())
@@ -734,7 +734,7 @@ void SimplexTree::write_bigraded_M2_file(std::string filename)
 void SimplexTree::write_singly_graded_M2_file(std::string filename)
 {
     //open the file
-    std::string m2filename = filename.substring(0, filename.size() - 4).append(".singly_graded.m2");
+    std::string m2filename = filename.substr(0, filename.size() - 4).append(".singly_graded.m2");
     std::ofstream m2file(m2filename);
 
     if(m2file.is_open())
@@ -874,7 +874,7 @@ void SimplexTree::write_singly_graded_M2_file(std::string filename)
 void SimplexTree::write_minimal_betti_M2_file(std::string filename)
 {
     //open the file
-    std::string m2filename = filename.substring(0, filename.size() - 4).append(".minimal_betti.m2");
+    std::string m2filename = filename.substr(0, filename.size() - 4).append(".minimal_betti.m2");
     std::ofstream m2file(m2filename);
 
     if(m2file.is_open())
