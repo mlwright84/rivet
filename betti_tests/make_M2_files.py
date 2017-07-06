@@ -1,5 +1,6 @@
 # There are a bunch of .txt files in this folder.
 # Make all the corresponding M2 files - bigraded, singly-graded w/o minimalBetti, and using minimalBetti
+# Also, this will collect timing data from RIVET.
 
 import os
 
