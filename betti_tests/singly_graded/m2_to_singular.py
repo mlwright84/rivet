@@ -1,5 +1,5 @@
 # Use a singly-graded M2 file to produce a Singular file.
-
+# RUN THIS SCRIPT BEFORE THE M2 FILES ARE SIMPLIFIED
 # TODO: Fix indexing
 
 import os
