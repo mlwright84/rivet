@@ -19,7 +19,7 @@ circle_pts = int (proportion_circle * total_pts)
 noise_pts = total_pts - circle_pts     
 
 for n in range(num_files):
-	file_name = "noisy_circle_%i_pts_%i.txt" % (total_pts, n)
+	file_name = "noisy_circle_%03i_pts_%i.txt" % (total_pts, n)
 	f = open(file_name, "w")
 
 	#print file header info

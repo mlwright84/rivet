@@ -2,7 +2,12 @@
 
 import os
 
-# Make the M2 files and collect the timing data for RIVET
+# We work assuming that the command:
+#	~/rivet/scripts$ python3 generate_points.py
+# has been run. This generates 10 noisy circle files, with sizes specified in that file.
+
+# We now have a bunch of RIVET files. We want to collect the timing data for the RIVET files,
+# as well as produce the corresponding Macaulay2 files.
 os.system("python3 make_M2_files.py")
 
 # Produce the Singular files
