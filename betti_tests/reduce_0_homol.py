@@ -19,4 +19,9 @@ for r, d, files in os.walk("./"):
 					f2.write(line)
 			f1.close()
 			f2.close()
-			os.system("mv temp.txt %s" % file)
+			if file.endswith("bigraded.m2"):
+				os.system("mv temp.txt bigraded/%s" % filename)
+			elif file.endswith("singly_graded.m2"):
+				os.system("mv temp.txt singly_graded/%s" % filename)
+			elif file.endswith("minimal_betti.m2"):
+				os.system("mv temp.txt minimal_betti/%s" % filename)
