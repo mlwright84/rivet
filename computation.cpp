@@ -43,7 +43,9 @@ std::unique_ptr<ComputationResult> Computation::compute_raw(ComputationInput& in
     std::ofstream output;
     output.open("rivet_timing.txt", std::ios_base::app);
     Timer timer;
+    timer.restart();
     long time;
+
 
     if (verbosity >= 2) {
         debug() << "\nBIFILTRATION:";
@@ -95,6 +97,8 @@ std::unique_ptr<ComputationResult> Computation::compute_raw(ComputationInput& in
         debug() << "  -- xi_i computation took " << time << " milliseconds";
         output << time << "\n";
     }
+
+    output.close();
 
     //store the xi support points
     mb.store_support_points(result->template_points);
