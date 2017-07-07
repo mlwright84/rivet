@@ -830,8 +830,13 @@ MapMatrix_RowPriority_Perm* MapMatrix_Perm::decompose_RU()
         //while column j is nonempty and its low number is found in the low array, do column operations
         while (columns[j] != NULL && low_by_row[columns[j]->get_row()] >= 0) {
             int c = low_by_row[columns[j]->get_row()];
-            add_column(c, j); fix this!
-            U->add_row(j, c); fix this! //perform the opposite row operation on U
+
+            //add a multiple of column c to column j, to clear the low entry in column j
+            element a = columns[j]->get_value();   //low element in column j
+            element w = columns[c]->get_value();   //low element in column c
+            element m = F.mul(F.inv(a), F.neg(w)); //satisfies a*m + w = 0 in field F
+            add_multiple(m, c, j);                 //perform row operation on R (add m copies of column c to column j)
+            U->add_multiple_row(F.neg(m), j, c);   //perform the opposite row operation on U (subtract m copies of row j from row c)
         }
 
         if (columns[j] != NULL) //then column is still nonempty, so update lows
@@ -1157,9 +1162,9 @@ element MapMatrix_RowPriority_Perm::get_entry(unsigned i, unsigned j)
 }
 
 //adds row j to row k; RESULT: row j is not changed, row k contains sum of rows j and k (with mod-2 arithmetic)
-void MapMatrix_RowPriority_Perm::add_row(unsigned j, unsigned k)
+void MapMatrix_RowPriority_Perm::add_multiple_row(element m, unsigned j, unsigned k)
 {
-    return MapMatrix_Base::add_column(j, k);
+    return MapMatrix_Base::add_multiple(m, j, k);
 }
 
 //transposes rows i and i+1

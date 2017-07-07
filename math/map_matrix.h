@@ -180,7 +180,7 @@ public:
     bool is_nonzero(unsigned i, unsigned j); //returns true if entry (i,j) is nonzero, false otherwise
     element get_entry(unsigned i, unsigned j); //returns the value at entry (i,j)
 
-    void add_row(unsigned j, unsigned k); //adds row j to row k; RESULT: row j is not changed, row k contains sum of rows j and k (with mod-2 arithmetic)
+    void add_multiple_row(element m, unsigned j, unsigned k); //adds m copies of row j to row k; row j is not changed
 
     void swap_rows(unsigned i); //transposes rows i and i+1
     void swap_columns(unsigned j); //transposes columns j and j+1
