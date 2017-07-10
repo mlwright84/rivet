@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "map_matrix.h"
 #include "index_matrix.h"
 #include "bool_array.h"
-#include "debug.h"
+#include "../debug.h" //CHECK THIS!
 #include <numeric> //for std::accumulate
 #include <stdexcept> //for error-checking and debugging
 
@@ -279,7 +279,7 @@ element MapMatrix_Base::get_entry(unsigned i, unsigned j)
 //  RESULT: column j is not changed, column k contains sum of columns j and k (with arithmetic in field F)
 void MapMatrix_Base::add_column(unsigned j, unsigned k)
 {
-    add_multiple(F.id(), j, k)
+    add_multiple(F.id(), j, k);
 }
 
 //adds m copies of column j to column k
@@ -291,7 +291,7 @@ void MapMatrix_Base::add_multiple(element m, unsigned j, unsigned k)
         throw std::runtime_error("MapMatrix_Base::add_multiple(): attempting to access column past end of matrix");
     if (j == k)
         throw std::runtime_error("MapMatrix_Base::add_multiple(): adding a column to itself");
-    if (!F.is_nonzero(m)) {
+    if (F.is_zero(m)) {
         debug() << "Warning: adding zero times a column in MapMatrix_Base::add_multiple()";
         return;
     }
@@ -323,7 +323,7 @@ void MapMatrix_Base::add_multiple(element m, unsigned j, unsigned k)
             if ((*columns[k]).get_row() == row) { //then add to this entry in column k
                 element sum = F.add(mj, (*columns[k]).get_value());
 
-                if (F.is_nonzero(sum)) { //then store sum in this entry of column k
+                if (!F.is_zero(sum)) { //then store sum in this entry of column k
                     (*columns[k]).set_value(sum);
                 } else { //then sum is zero, so remove this entry of column k
                     MapMatrixNode* next = (*columns[k]).get_next();
@@ -351,7 +351,7 @@ void MapMatrix_Base::add_multiple(element m, unsigned j, unsigned k)
             if (next->get_row() == row) { //then add to this entry in column k
                 element sum = F.add(mj, next->get_value());
 
-                if (F.is_nonzero(sum)) { //then store sum in this entry of column k
+                if (!F.is_zero(sum)) { //then store sum in this entry of column k
                     next->set_value(sum);
                 } else { //then sum is zero, so remove this entry of column k
                     khandle->set_next(next->get_next());
@@ -359,7 +359,6 @@ void MapMatrix_Base::add_multiple(element m, unsigned j, unsigned k)
                 }
                 added = true; //proceed with next element from column j
             } else if (next->get_row() < row) { //then insert new node into column k
-            {
                 MapMatrixNode* newnode = new MapMatrixNode(row, mj);
                 newnode->set_next(next);
                 khandle->set_next(newnode);
@@ -468,7 +467,7 @@ bool MapMatrix::is_nonzero(unsigned i, unsigned j)
 }
 
 //returns the value at entry (i,j)
-bool MapMatrix::get_entry(unsigned i, unsigned j)
+element MapMatrix::get_entry(unsigned i, unsigned j)
 {
     return MapMatrix_Base::get_entry(i, j);
 }
@@ -492,6 +491,12 @@ int MapMatrix::low(unsigned j)
 bool MapMatrix::col_is_empty(unsigned j)
 {
     return (columns[j] == NULL);
+}
+
+//adds m copies of column j to column k; column j is not changed
+void MapMatrix::add_multiple(element m, unsigned j, unsigned k)
+{
+    MapMatrix_Base::add_multiple(m, j, k);
 }
 
 //adds a multiple of column j to column k, in order to eliminate the low entry in column k
@@ -530,7 +535,7 @@ void MapMatrix::add_eliminate_low(MapMatrix* other, unsigned j, unsigned k)
 
     element m = F.mul(F.inv(a), F.neg(w)); //satisfies a*m + w = 0 in field F
 
-    if (!F.is_nonzero(m)) {
+    if (F.is_zero(m)) {
         debug() << "Warning: adding zero times a column in MapMatrix::add_eliminate_low(other)";
         return;
     }
@@ -559,9 +564,9 @@ void MapMatrix::add_eliminate_low(MapMatrix* other, unsigned j, unsigned k)
         }
         if (!added && khandle == NULL) { //then we haven't yet added anything to column k (but if we get here, column k is nonempty)
             if ( columns[k]->get_row() == row) { //then remove this node (since 1+1=0)
-            	element sum = F.add(mj, columns[k].get_value());
+            	element sum = F.add(mj, columns[k]->get_value());
 
-            	if(F.is_nonzero(sum)) { //then store sum in this entry of column k
+            	if(!F.is_zero(sum)) { //then store sum in this entry of column k
             		columns[k]->set_value(sum);
             	} else { //then sum is zero, so remove this entry of column k
 	                MapMatrixNode* next = columns[k]->get_next();
@@ -589,7 +594,7 @@ void MapMatrix::add_eliminate_low(MapMatrix* other, unsigned j, unsigned k)
             if (next->get_row() == row) { //then add to this entry in column k
                 element sum = F.add(mj, next->get_value());
 
-                if (F.is_nonzero(sum)) { //then store sum in this entry of column k
+                if (!F.is_zero(sum)) { //then store sum in this entry of column k
                 	next->set_value(sum);
                 } else { //then sum is zero, so remove this entry of column k
                     khandle->set_next(next->get_next());
@@ -813,7 +818,7 @@ bool MapMatrix_Perm::is_nonzero(unsigned i, unsigned j)
 }
 
 //returns the value at entry (i,j)
-bool MapMatrix_Perm::get_entry(unsigned i, unsigned j)
+element MapMatrix_Perm::get_entry(unsigned i, unsigned j)
 {
     return MapMatrix::get_entry(mrep[i], j);
 }
@@ -823,7 +828,7 @@ bool MapMatrix_Perm::get_entry(unsigned i, unsigned j)
 MapMatrix_RowPriority_Perm* MapMatrix_Perm::decompose_RU()
 {
     //create the matrix U
-    MapMatrix_RowPriority_Perm* U = new MapMatrix_RowPriority_Perm(columns.size()); //NOTE: must be deleted later!
+    MapMatrix_RowPriority_Perm* U = new MapMatrix_RowPriority_Perm(columns.size(), F); //NOTE: must be deleted later!
 
     //loop through columns
     for (unsigned j = 0; j < columns.size(); j++) {

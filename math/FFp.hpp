@@ -34,11 +34,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <vector>
+#include <stdexcept> //for error-checking and debugging
 
+
+typedef int element;
 
 class FFp {
 public:
-    typedef int element;
 
     FFp(element p = 2) : p_(p)  //similar to Z_mod::initialize_Z_mod(int p) in Macaulay2 -- https://github.com/Macaulay2/M2/blob/master/M2/Macaulay2/e/ZZp.cpp
     {

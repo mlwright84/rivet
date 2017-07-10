@@ -110,7 +110,8 @@ public:
     virtual int low(unsigned j); //returns the "low" index in the specified column, or -1 if the column is empty
     bool col_is_empty(unsigned j); //returns true iff column j is empty (for columns that are not empty, this method is faster than low(j))
 
-	void add_eliminate_low(unsigned j, unsigned k); //adds a multiple of column j to column k, in order to eliminate the low entry in column k; column j is not changed
+	void add_multiple(element m, unsigned j, unsigned k); //adds m copies of column j to column k; column j is not changed
+    void add_eliminate_low(unsigned j, unsigned k); //adds a multiple of column j to column k, in order to eliminate the low entry in column k; column j is not changed
     void add_eliminate_low(MapMatrix* other, unsigned j, unsigned k); //adds column j from MapMatrix* other to column k of this matrix
 
     //copies NONZERO columns with indexes in [first, last] from other, appending them to this matrix to the right of all existing columns
@@ -195,3 +196,37 @@ protected:
 };
 
 #endif // __MapMatrix_H__
+
+
+/*** TESTING MATRICES WITH PRIME FIELD ENTRIES ***/
+
+#include <cstdlib> //for random numbers
+#include <iostream>
+
+int main(int argc, char* argv[])
+{
+    int p = 7;
+    FFp F = FFp(p);
+    MapMatrix M = MapMatrix(6, 8, F);
+    std::cout << "Working in the field of order " << p << "\n";
+
+    //fill matrix
+    std::srand(0);
+    for(int r = 0; r < 6; r++) {
+        for(int c = 0; c < 8; c++) {
+            M.set(r, c, std::rand() % p);
+        }
+    }
+    std::cout << "Matrix:\n";
+    std::cout << M;
+
+    //do some operations
+    std::cout << "Testing column operations:\n";
+    for(int c=1; c < 8; c++) {
+        std::cout << "  Adding " << F.to_element(c) << " times column 1 to column " << c << "\n";
+        M.add_multiple(F.to_element(c), 0, c);
+    }
+    std::cout << M;
+
+    return 0;
+}
