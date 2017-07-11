@@ -511,10 +511,10 @@ void MapMatrix::add_eliminate_low(unsigned j, unsigned k)
     	throw std::runtime_error("MapMatrix::add_eliminate_low(): empty column");
 
     //compute the multiple of column j to add to column k
-    element a = columns[j]->get_value(); //low element in column j
-    element w = columns[k]->get_value(); //low element in column k
+    element w = columns[j]->get_value(); //low element in column j
+    element a = columns[k]->get_value(); //low element in column k
 
-    element m = F.mul(F.inv(a), F.neg(w)); //satisfies a*m + w = 0 in field F
+    element m = F.mul(F.inv(w), F.neg(a)); //satisfies m*w + a = 0 in field F
 
     //now add the columns
     add_multiple(m, j, k);
@@ -530,10 +530,10 @@ void MapMatrix::add_eliminate_low(MapMatrix* other, unsigned j, unsigned k)
         throw std::runtime_error("MapMatrix::add_eliminate_low(other): empty column");
 
     //compute multiple of column j to add to column k
-    element a = other->columns[j]->get_value(); //low element in column j
-    element w = columns[k]->get_value(); //low element in column k
+    element w = other->columns[j]->get_value(); //low element in column j
+    element a = columns[k]->get_value(); //low element in column k
 
-    element m = F.mul(F.inv(a), F.neg(w)); //satisfies a*m + w = 0 in field F
+    element m = F.mul(F.inv(w), F.neg(a)); //satisfies m*w + a = 0 in field F
 
     if (F.is_zero(m)) {
         debug() << "Warning: adding zero times a column in MapMatrix::add_eliminate_low(other)";
@@ -837,15 +837,14 @@ MapMatrix_RowPriority_Perm* MapMatrix_Perm::decompose_RU()
             int c = low_by_row[columns[j]->get_row()];
 
             //add a multiple of column c to column j, to clear the low entry in column j
-            element a = columns[j]->get_value();   //low element in column j
             element w = columns[c]->get_value();   //low element in column c
-            element m = F.mul(F.inv(a), F.neg(w)); //satisfies a*m + w = 0 in field F
+            element a = columns[j]->get_value();   //low element in column j
+            element m = F.mul(F.inv(w), F.neg(a)); //satisfies m*w + a = 0 in field F
             add_multiple(m, c, j);                 //perform row operation on R (add m copies of column c to column j)
             U->add_multiple_row(F.neg(m), j, c);   //perform the opposite row operation on U (subtract m copies of row j from row c)
         }
 
-        if (columns[j] != NULL) //then column is still nonempty, so update lows
-        {
+        if (columns[j] != NULL) { //then column is still nonempty, so update lows
             low_by_col[j] = columns[j]->get_row();
             low_by_row[columns[j]->get_row()] = j;
         }

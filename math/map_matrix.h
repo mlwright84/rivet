@@ -205,15 +205,18 @@ protected:
 
 int main(int argc, char* argv[])
 {
-    int p = 7;
+    int p = 11;
+    unsigned rows = 6;
+    unsigned cols = 8;
+
     FFp F = FFp(p);
-    MapMatrix M = MapMatrix(6, 8, F);
+    MapMatrix M = MapMatrix(rows, cols, F);
     std::cout << "Working in the field of order " << p << "\n";
 
     //fill matrix
-    std::srand(0);
-    for(int r = 0; r < 6; r++) {
-        for(int c = 0; c < 8; c++) {
+    std::srand(100);
+    for(unsigned r = 0; r < M.height(); r++) {
+        for(unsigned c = 0; c < M.width(); c++) {
             M.set(r, c, std::rand() % p);
         }
     }
@@ -221,12 +224,42 @@ int main(int argc, char* argv[])
     std::cout << M;
 
     //do some operations
-    std::cout << "Testing column operations:\n";
-    for(int c=1; c < 8; c++) {
-        std::cout << "  Adding " << F.to_element(c) << " times column 1 to column " << c << "\n";
-        M.add_multiple(F.to_element(c), 0, c);
+    // std::cout << "Testing column operations:\n";
+    // for(unsigned c=1; c < M.width(); c++) {
+    //     std::cout << "  Adding " << F.to_element(c) << " times column 1 to column " << c << "\n";
+    //     M.add_multiple(F.to_element(c), 0, c);
+    // }
+    // std::cout << M;
+
+    //reduce the matrix
+    std::vector<int> lows(M.width(), -1); //low array
+    for (unsigned j = 0; j < M.width(); j++) {
+        //while column c is nonempty and its low number is found in the low array, do column operations
+        // std::cout << "column " << j << ": low row is " << M.low(j) << "; nonempty: " << (!M.col_is_empty(j)) << "\n";
+        while ( !M.col_is_empty(j) && lows[M.low(j)] >= 0) {
+        	//std::cout << "checkpoint\n";
+            int l = M.low(j);
+            int c = lows[l];
+
+            //add a multiple of column c to column j, to clear the low entry in column j
+            element w = M.get_entry(l,c);   //low element in column c
+            element a = M.get_entry(l,j);   //low element in column j
+            element m = F.mul(F.inv(w), F.neg(a)); //satisfies w*m + a = 0 in field F
+            // std::cout << "  Adding " << m << " times column " << c << " to column " << j << "\n";
+            M.add_multiple(m, c, j);        //perform row operation (add m copies of column c to column j)
+
+            // std::cout << M;
+            //M.add_eliminate_low(c, j);
+        }
+
+        if (!M.col_is_empty(j)) { //then column is still nonempty, so update lows
+            lows[M.low(j)] = j;
+            // std::cout << "stored " << j << " in lows[" << M.low(j) << "]\n";
+        }
+
+        std::cout << "Finished with column " << j << ":\n" << M;
     }
-    std::cout << M;
+
 
     return 0;
 }
