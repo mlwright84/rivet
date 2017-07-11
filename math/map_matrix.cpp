@@ -1017,7 +1017,7 @@ void MapMatrix_Perm::rebuild(MapMatrix_Perm* reference, std::vector<unsigned>& c
     }
 } //end rebuild()
 
-//function to print the matrix to standard output, for testing purposes
+//function to print the matrix to debug(), for testing purposes
 void MapMatrix_Perm::print()
 {
     //handle empty matrix
@@ -1050,7 +1050,7 @@ void MapMatrix_Perm::print()
         for (unsigned j = 0; j < columns.size(); j++) {
             qd << " " << mx.at(i, j);
         }
-        qd << " |";
+        qd << " |\n";
     }
 } //end print()
 
@@ -1230,7 +1230,7 @@ void MapMatrix_RowPriority_Perm::print()
         for (unsigned j = 0; j < columns.size(); j++) {
             qd << " " << mx.at(i, j);
         }
-        qd << " |";
+        qd << " |\n";
     }
 } //end print()
 

@@ -205,12 +205,12 @@ protected:
 
 int main(int argc, char* argv[])
 {
-    int p = 11;
+    int p = 7;
     unsigned rows = 6;
     unsigned cols = 8;
 
     FFp F = FFp(p);
-    MapMatrix M = MapMatrix(rows, cols, F);
+    MapMatrix_Perm M = MapMatrix_Perm(rows, cols, F);
     std::cout << "Working in the field of order " << p << "\n";
 
     //fill matrix
@@ -232,33 +232,42 @@ int main(int argc, char* argv[])
     // std::cout << M;
 
     //reduce the matrix
-    std::vector<int> lows(M.width(), -1); //low array
-    for (unsigned j = 0; j < M.width(); j++) {
-        //while column c is nonempty and its low number is found in the low array, do column operations
-        // std::cout << "column " << j << ": low row is " << M.low(j) << "; nonempty: " << (!M.col_is_empty(j)) << "\n";
-        while ( !M.col_is_empty(j) && lows[M.low(j)] >= 0) {
-        	//std::cout << "checkpoint\n";
-            int l = M.low(j);
-            int c = lows[l];
+    // std::vector<int> lows(M.width(), -1); //low array
+    // for (unsigned j = 0; j < M.width(); j++) {
+    //     //while column c is nonempty and its low number is found in the low array, do column operations
+    //     // std::cout << "column " << j << ": low row is " << M.low(j) << "; nonempty: " << (!M.col_is_empty(j)) << "\n";
+    //     while ( !M.col_is_empty(j) && lows[M.low(j)] >= 0) {
+    //     	//std::cout << "checkpoint\n";
+    //         int l = M.low(j);
+    //         int c = lows[l];
 
-            //add a multiple of column c to column j, to clear the low entry in column j
-            element w = M.get_entry(l,c);   //low element in column c
-            element a = M.get_entry(l,j);   //low element in column j
-            element m = F.mul(F.inv(w), F.neg(a)); //satisfies w*m + a = 0 in field F
-            // std::cout << "  Adding " << m << " times column " << c << " to column " << j << "\n";
-            M.add_multiple(m, c, j);        //perform row operation (add m copies of column c to column j)
+    //         //add a multiple of column c to column j, to clear the low entry in column j
+    //         element w = M.get_entry(l,c);   //low element in column c
+    //         element a = M.get_entry(l,j);   //low element in column j
+    //         element m = F.mul(F.inv(w), F.neg(a)); //satisfies w*m + a = 0 in field F
+    //         // std::cout << "  Adding " << m << " times column " << c << " to column " << j << "\n";
+    //         M.add_multiple(m, c, j);        //perform row operation (add m copies of column c to column j)
 
-            // std::cout << M;
-            //M.add_eliminate_low(c, j);
-        }
+    //         // std::cout << M;
+    //         //M.add_eliminate_low(c, j);
+    //     }
 
-        if (!M.col_is_empty(j)) { //then column is still nonempty, so update lows
-            lows[M.low(j)] = j;
-            // std::cout << "stored " << j << " in lows[" << M.low(j) << "]\n";
-        }
+    //     if (!M.col_is_empty(j)) { //then column is still nonempty, so update lows
+    //         lows[M.low(j)] = j;
+    //         // std::cout << "stored " << j << " in lows[" << M.low(j) << "]\n";
+    //     }
 
-        std::cout << "Finished with column " << j << ":\n" << M;
-    }
+    //     std::cout << "Finished with column " << j << ":\n" << M;
+    // }
+
+    //test RU-decomposition
+    MapMatrix_RowPriority_Perm* U = M.decompose_RU();
+
+    std::cout << "Matrix R:\n";
+    M.print();
+    std::cout << "Matrix U:\n";
+    U->print();
+
 
 
     return 0;
