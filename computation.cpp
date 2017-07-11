@@ -65,7 +65,7 @@ std::unique_ptr<ComputationResult> Computation::compute_raw(ComputationInput& in
 
     time = timer.elapsed();
     debug() << "  -- bifiltration computation took " << time << " milliseconds";
-    output << "homol" << params.dim << " " << "pts" << params.shortName.substr(13, 16) << " ";
+    output << "homol" << params.dim << " " << "pts" << params.shortName.substr(13, 3) << " ";
     output << time << " ";
 
     //write Macaulay2 file for computing Betti numbers
