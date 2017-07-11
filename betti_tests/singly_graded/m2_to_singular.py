@@ -1,15 +1,15 @@
 # Use a singly-graded M2 file to produce a Singular file.
 # RUN THIS SCRIPT BEFORE THE M2 FILES ARE SIMPLIFIED
-# TODO: Fix indexing
+# TODO: Fix issues with 0th homology
 
 import os
 import string
 import re
 
 for file_name in os.listdir():
-	if not file_name.endswith(".m2"):
+	if not file_name.endswith("singly_graded.m2"):
 		continue
-	s_file = file_name[:-3] + ".txt"
+	s_file = file_name[:-3] + ".sing"
 	print("Writing the file %s" %s_file)
 
 	# Open f1 for writing and f2 for reading
@@ -89,7 +89,7 @@ for file_name in os.listdir():
 			d2_dict[y_val] = [(x_val, monomial)]
 	# Data collected; now, output it to the file.
 	for key in d2_dict:
-		f1.write("d2[%d]=" %key)
+		f1.write("d2[%d]=" % (key + 1))
 		pairs = d2_dict[key]
 		terms = map(lambda x : "%s*gen(%d)" % (x[1], x[0]), pairs)
 		f1.write("%s;\n" % "+".join(terms))
@@ -136,5 +136,8 @@ for file_name in os.listdir():
 	f1.write("resolution resH=lres(H,0);\n")
 	f1.write('print(betti(resH), "betti");\n')
 	f1.close()
+
+	#append to file using 
+	#	write(":a outfile", "text to be appended");
 
 #TODO: redo using sres() from Shcreyer.lib
