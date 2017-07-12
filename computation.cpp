@@ -37,7 +37,7 @@ Computation::~Computation()
 {
 }
 
-std::unique_ptr<ComputationResult> Computation::compute_raw(ComputationInput& input)
+void Computation::compute_raw(ComputationInput& input)
 {
     if (verbosity >= 2) {
         debug() << "\nBIFILTRATION:";
@@ -59,9 +59,9 @@ std::unique_ptr<ComputationResult> Computation::compute_raw(ComputationInput& in
     std::unique_ptr<ComputationResult> result(new ComputationResult);
     //compute xi_0 and xi_1 at all bigrades
     if (verbosity >= 2) {
-        debug() << "COMPUTING xi_0, xi_1, AND xi_2 FOR HOMOLOGY DIMENSION " << params.dim << ":";
+        debug() << "COMPUTING xi_0, xi_1, AND xi_2 FOR HOMOLOGY DIMENSION " << params.dim << " IN FIELD F_" << params.prime << ":";
     }
-    MultiBetti mb(input.bifiltration(), params.dim);
+    MultiBetti mb(input.bifiltration(), params.dim, params.prime);
     Timer timer;
     mb.compute(result->homology_dimensions, progress);
     mb.compute_xi2(result->homology_dimensions);
@@ -78,7 +78,7 @@ std::unique_ptr<ComputationResult> Computation::compute_raw(ComputationInput& in
 
     //STAGES 4 and 5: BUILD THE LINE ARRANGEMENT AND COMPUTE BARCODE TEMPLATES
 
-    //build the arrangement
+/*    //build the arrangement
     if (verbosity >= 2) {
         debug() << "CALCULATING ANCHORS AND BUILDING THE DCEL ARRANGEMENT";
     }
@@ -106,15 +106,15 @@ std::unique_ptr<ComputationResult> Computation::compute_raw(ComputationInput& in
         arrangement->test_consistency();
     }
     result->arrangement = std::move(arrangement);
-    return result;
+    return result; */
 }
 
-std::unique_ptr<ComputationResult> Computation::compute(InputData data)
+void Computation::compute(InputData data)
 {
     progress.advanceProgressStage(); //update progress box to stage 3
 
     auto input = ComputationInput(data);
     //print bifiltration statistics
     //debug() << "Computing from raw data";
-    return compute_raw(input);
+    compute_raw(input);
 }

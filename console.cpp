@@ -39,6 +39,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 static const char USAGE[] =
     R"(RIVET: Rank Invariant Visualization and Exploration Tool
 
+     THIS PROGRAM COMPUTES BIGRADED BETTI NUMBERS OVER PRIME FIELDS
+     IT DOES NOT COMPUTE THE AUGMENTED ARRANGEMENT!
+
      The RIVET console application computes an augmented arrangement for
      2D persistent homology, which can be visualized with the RIVET GUI app.
      It also can perform standalone computation of Betti numbers, as well as 
@@ -49,7 +52,7 @@ static const char USAGE[] =
       rivet_console (-h | --help)
       rivet_console --version
       rivet_console <input_file> --identify
-      rivet_console <input_file> --betti [-H <dimension>] [-V <verbosity>] [-x <xbins>] [-y <ybins>]
+      rivet_console <input_file> --betti [-p <prime>] [-H <dimension>] [-V <verbosity>] [-x <xbins>] [-y <ybins>]
       rivet_console <precomputed_file> --bounds
       rivet_console <precomputed_file> --barcodes <line_file>
       rivet_console <input_file> <output_file> [-H <dimension>] [-V <verbosity>] [-x <xbins>] [-y <ybins>] [-f <format>] [--binary]
@@ -66,11 +69,13 @@ static const char USAGE[] =
       -H <dimension> --homology=<dimension>    Dimension of homology to compute [default: 0]
       -x <xbins> --xbins=<xbins>               Number of bins in the x direction [default: 0]
       -y <ybins> --ybins=<ybins>               Number of bins in the y direction [default: 0]
+      -p <prime> --prime=<prime>               Order of the field: must be prime [default: 2]
       -V <verbosity> --verbosity=<verbosity>   Verbosity level: 0 (no console output) to 10 (lots of output) [default: 0]
       -f <format>                              Output format for file [default: R1]
       -b --betti                               Print dimension and Betti number information, then exit.        
       --bounds                                 Print lower and upper bounds for the module in <precomputed_file> and exit
-      --barcodes <line_file>                   Print barcodes for the line queries in line_file, then exit.
+)";
+/*      --barcodes <line_file>                   Print barcodes for the line queries in line_file, then exit.
                                                line_file consists of pairs "m b", each representing a query line.
                                                m is the slope of the query line, given in degrees (0 to 90); b is the 
                                                signed distance from the query line to the origin, where the sign is 
@@ -92,7 +97,7 @@ static const char USAGE[] =
                                                     67 0.88: 23.3613 inf x1
                                                     10 0.92: 11.9947 inf x1, 11.9947 19.9461 x2, 11.9947 16.4909 x1, 11.9947 13.0357 x4
 
-)";
+)";*/
 
 unsigned int get_uint_or_die(std::map<std::string, docopt::value>& args, const std::string& key)
 {
@@ -291,6 +296,7 @@ int main(int argc, char* argv[])
     params.dim = get_uint_or_die(args, "--homology");
     params.x_bins = get_uint_or_die(args, "--xbins");
     params.y_bins = get_uint_or_die(args, "--ybins");
+    params.prime = get_uint_or_die(args, "--prime");
     params.verbosity = get_uint_or_die(args, "--verbosity");
     params.outputFormat = args["-f"].asString();
     bool betti_only = args["--betti"].isBool() && args["--betti"].asBool();
@@ -437,7 +443,8 @@ int main(int argc, char* argv[])
         if (params.verbosity >= 4) {
             debug() << "Input processed.";
         }
-        result = computation.compute(*input);
+        computation.compute(*input);
+/*
         if (params.verbosity >= 2) {
             debug() << "Computation complete; augmented arrangement ready.";
         }
@@ -467,6 +474,7 @@ int main(int argc, char* argv[])
                 throw std::runtime_error(ss.str());
             }
         }
+*/
     }
     if (params.verbosity > 2) {
         debug() << "CONSOLE RIVET: Goodbye!";

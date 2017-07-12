@@ -198,7 +198,7 @@ protected:
 #endif // __MapMatrix_H__
 
 
-/*** TESTING MATRICES WITH PRIME FIELD ENTRIES ***/
+/*** TESTING MATRICES WITH PRIME FIELD ENTRIES ***
 
 #include <cstdlib> //for random numbers
 #include <iostream>
@@ -272,3 +272,4 @@ int main(int argc, char* argv[])
 
     return 0;
 }
+*/

@@ -32,6 +32,7 @@ struct InputParameters {
     int dim; //dimension of homology to compute
     unsigned x_bins; //number of bins for x-coordinate (if 0, then bins are not used for x)
     unsigned y_bins; //number of bins for y-coordinate (if 0, then bins are not used for y)
+    unsigned prime; //prime order of field
     int verbosity; //controls the amount of console output printed
     std::string x_label; //used by configuration dialog
     std::string y_label; //used by configuration dialog

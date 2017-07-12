@@ -57,32 +57,32 @@ target_link_libraries(rivet_console ${CMAKE_CURRENT_BINARY_DIR}/docopt/src/docop
 # TODO: make this not recompile everything we just compiled for rivet_console.
 # Maybe using https://cmake.org/Wiki/CMake/Tutorials/Object_Library ?
 
-add_executable(unit_tests
-        computation.cpp
-        interface/progress.cpp
-        interface/file_writer.cpp
-        interface/file_input_reader.cpp
-        interface/input_manager.cpp
-        dcel/arrangement.cpp
-        dcel/arrangement_builder.cpp
-        dcel/anchor.cpp
-        dcel/barcode.cpp
-        dcel/barcode_template.cpp
-        dcel/dcel.cpp
-        math/map_matrix.cpp
-        math/multi_betti.cpp
-        math/simplex_tree.cpp
-        math/st_node.cpp
-        math/template_point.cpp
-        math/template_points_matrix.cpp
-        math/index_matrix.cpp
-        math/persistence_updater.cpp
-        numerics.cpp
-        timer.cpp
-        debug.cpp
-        test/unit_tests.cpp dcel/grades.cpp dcel/grades.h math/bool_array.cpp math/bool_array.h)
+# add_executable(unit_tests
+#        computation.cpp
+#        interface/progress.cpp
+#        interface/file_writer.cpp
+#        interface/file_input_reader.cpp
+#        interface/input_manager.cpp
+#        dcel/arrangement.cpp
+#        dcel/arrangement_builder.cpp
+#        dcel/anchor.cpp
+#        dcel/barcode.cpp
+#        dcel/barcode_template.cpp
+#        dcel/dcel.cpp
+#        math/map_matrix.cpp
+#        math/multi_betti.cpp
+#        math/simplex_tree.cpp
+#        math/st_node.cpp
+#        math/template_point.cpp
+#        math/template_points_matrix.cpp
+#        math/index_matrix.cpp
+#        math/persistence_updater.cpp
+#        numerics.cpp
+#        timer.cpp
+#        debug.cpp
+#        test/unit_tests.cpp dcel/grades.cpp dcel/grades.h math/bool_array.cpp math/bool_array.h)
 
 
 include_directories("${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/include" ${Boost_INCLUDE_DIR} ${PROJECT_SOURCE_DIR}/test)
 
-target_link_libraries(unit_tests ${Boost_LIBRARIES})
+# target_link_libraries(unit_tests ${Boost_LIBRARIES})

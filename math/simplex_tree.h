@@ -33,6 +33,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define __SimplexTree_H__
 
 //forward declarations
+class FFp;
 class IndexMatrix;
 class MapMatrix;
 class MapMatrix_Perm;
@@ -88,13 +89,13 @@ public:
     void update_dim_indexes(); 
 
     //returns a matrix of boundary information for simplices
-    MapMatrix* get_boundary_mx(unsigned dim); 
+    MapMatrix* get_boundary_mx(unsigned dim, FFp& field); 
 
     //returns a boundary matrix for hom_dim-simplices with columns in a specified order -- for vineyard-update algorithm
-    MapMatrix_Perm* get_boundary_mx(std::vector<int>& coface_order, unsigned num_simplices); 
+    MapMatrix_Perm* get_boundary_mx(std::vector<int>& coface_order, unsigned num_simplices, FFp& field); 
 
     //returns a boundary matrix for (hom_dim+1)-simplices with columns and rows a specified orders -- for vineyard-update algorithm
-    MapMatrix_Perm* get_boundary_mx(std::vector<int>& face_order, unsigned num_faces, std::vector<int>& coface_order, unsigned num_cofaces); 
+    MapMatrix_Perm* get_boundary_mx(std::vector<int>& face_order, unsigned num_faces, std::vector<int>& coface_order, unsigned num_cofaces, FFp& field); 
 
     //returns a matrix of column indexes to accompany MapMatrices
     IndexMatrix* get_index_mx(unsigned dim); 

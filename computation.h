@@ -75,7 +75,7 @@ public:
     Computation(InputParameters& params, Progress& progress);
     ~Computation();
 
-    std::unique_ptr<ComputationResult> compute(InputData data);
+    void compute(InputData data);
 
 private:
     InputParameters& params;
@@ -83,5 +83,5 @@ private:
 
     const int verbosity;
 
-    std::unique_ptr<ComputationResult> compute_raw(ComputationInput& input);
+    void compute_raw(ComputationInput& input);
 };
