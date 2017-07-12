@@ -283,7 +283,7 @@ MapMatrix* SimplexTree::get_boundary_mx(unsigned dim, FFp& field)
     //loop through simplices, writing columns to the matrix
     int col = 0; //column counter
     for (SimplexSet::iterator it = simplices->begin(); it != simplices->end(); ++it) {
-        write_boundary_column(mat, *it, col, 0);
+        write_boundary_column(mat, *it, col, 0, field);
 
         col++;
     }
@@ -306,7 +306,7 @@ MapMatrix_Perm* SimplexTree::get_boundary_mx(std::vector<int>& coface_order, uns
     for (SimplexSet::iterator it = ordered_simplices.begin(); it != ordered_simplices.end(); ++it) {
         int order_index = coface_order[dim_index]; //index of the matrix column which will store the boundary of this simplex
         if (order_index != -1) {
-            write_boundary_column(mat, *it, order_index, 0);
+            write_boundary_column(mat, *it, order_index, 0, field);
         }
 
         dim_index++; //increment the column counter
@@ -349,8 +349,12 @@ MapMatrix_Perm* SimplexTree::get_boundary_mx(std::vector<int>& face_order, unsig
                     throw std::runtime_error("SimplexTree::get_boundary_mx(): Facet simplex not found.");
                 int facet_order_index = face_order[facet_node->dim_index()];
 
-                //for this boundary simplex, enter "1" in the appropriate cell in the matrix
-                mat->set(facet_order_index, order_index, 1); /////////////////////////////////////////////////////////////////////TODO: FIX THIS!!!!!
+                //set the appropriate matrix entry to +1 or -1, depending on the orientation of this boundary simplex
+                element orientation = 1;
+                if (field.order() != 2 && k % 2 == 1) {
+                    orientation = field.to_element(-1);
+                }
+                mat->set(facet_order_index, order_index, orientation);
             }
         }
         dim_index++; //increment the column counter
@@ -361,7 +365,7 @@ MapMatrix_Perm* SimplexTree::get_boundary_mx(std::vector<int>& face_order, unsig
 } //end get_boundary_mx(int, vector<int>, vector<int>)
 
 //writes boundary information for simplex represented by sim in column col of matrix mat; offset allows for block matrices such as B+C
-void SimplexTree::write_boundary_column(MapMatrix* mat, STNode* sim, int col, int offset)
+void SimplexTree::write_boundary_column(MapMatrix* mat, STNode* sim, int col, int offset, FFp& field)
 {
     //get vertex list for this simplex
     std::vector<int> verts = find_vertices(sim->global_index());
@@ -384,8 +388,12 @@ void SimplexTree::write_boundary_column(MapMatrix* mat, STNode* sim, int col, in
             throw std::runtime_error("SimplexTree::write_boundary_column(): Facet simplex not found.");
         int facet_di = facet_node->dim_index();
 
-        //for this boundary simplex, enter "1" in the appropriate cell in the matrix
-        mat->set(facet_di + offset, col, 1); /////////////////////////////////////////////////////////////////////////////////////TODO: FIX THIS!!!!!
+        //set the appropriate matrix entry to +1 or -1, depending on the orientation of this boundary simplex
+        element orientation = 1;
+        if (field.order() != 2 && k % 2 == 1) {
+            orientation = field.to_element(-1);
+        }
+        mat->set(facet_di + offset, col, orientation);
     }
 } //end write_col();
 

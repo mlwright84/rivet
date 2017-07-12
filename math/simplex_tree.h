@@ -149,7 +149,7 @@ private:
 
     void find_vertices_recursively(std::vector<int>& vertices, STNode* node, int key); //recursively search for a global index and keep track of vertices
 
-    void write_boundary_column(MapMatrix* mat, STNode* sim, int col, int offset); //writes boundary information for simplex represented by sim in column col of matrix mat; offset allows for block matrices such as B+C
+    void write_boundary_column(MapMatrix* mat, STNode* sim, int col, int offset, FFp& field); //writes boundary information for simplex represented by sim in column col of matrix mat; offset allows for block matrices such as B+C
 };
 
 #endif // __SimplexTree_H__
