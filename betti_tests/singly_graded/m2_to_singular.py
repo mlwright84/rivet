@@ -9,11 +9,11 @@ import re
 for file_name in os.listdir():
 	if not file_name.endswith("singly_graded.m2"):
 		continue
-	s_file = file_name[:-3] + ".sing"
-	print("Writing the file %s" %s_file)
+	res_file = file_name[:-3] + "_res.sing"
+	print("Writing the file %s" % res_file)
 
 	# Open f1 for writing and f2 for reading
-	f1 = open(s_file, "w")
+	f1 = open(res_file, "w")
 	f2 = open(file_name, "r")
 
 	# Start writing to the new file
@@ -123,7 +123,7 @@ for file_name in os.listdir():
 	for key in d1_dict:
 		f1.write("d1[%d]=" % key)
 		pairs = d1_dict[key]
-		terms = map(lambda x : "%s*gen(%d)" % (x[1], x[0]), pairs)
+		terms = map(lambda x : "%s*gen(%d)" % (x[1], x[0] + 1), pairs)
 		f1.write("+".join(terms))
 
 
@@ -131,13 +131,27 @@ for file_name in os.listdir():
 	f2.close()
 	f1.write('attrib(d2,"isHomog",single_grades_C1);\n')
 	f1.write('attrib(d1,"isHomog",single_grades_C0);\n')
-	f1.write("module triv=0;\n")
-	f1.write("def H=homology(d2,d1,triv,triv);\n")
-	f1.write("resolution resH=lres(H,0);\n")
+	f1.write('timer=0;\n')
+	f1.write('system("--ticks-per-sec",1000); //timer resolution in ms\n')
+	f1.write('int t_0=timer;\n')
+	f1.write('module triv=0;\n')
+	f1.write('def H=homology(d2,d1,triv,triv);\n')
+	f1.write('write(":a singular_res_times.txt", timer - t_0);\n')
+	f1.write('resolution resH=res(H,0);\n')	
+	f1.write('write(":a singular_res_times.txt", timer - t_0);\n')
 	f1.write('print(betti(resH), "betti");\n')
+	f1.write('write(":a singular_res_times.txt", timer - t_0);\n')
+	f1.write('write(":a singular_res_times.txt", "\\n");\n')
 	f1.close()
 
-	#append to file using 
-	#	write(":a outfile", "text to be appended");
+	# Copy the lines into another file, with a couple of tweaks -- repeat with sres()
+	sres_file = file_name[:-3] + "_sres.sing"
+	f1 = open(sres_file, "w")
+	f2 = open(res_file, "r")
 
-#TODO: redo using sres() from Shcreyer.lib
+	f1.write('LIB "schreyer.lib";\n')
+	for line in f2:
+		f1.write(line.replace("resolution resH=res(H,0);", "resolution resH=s_res(H,0);")
+			.replace("singular_res_times.txt", "singular_sres_times.txt"))
+	f1.close()
+	f2.close()
