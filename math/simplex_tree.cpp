@@ -999,7 +999,7 @@ void SimplexTree::write_minimal_betti_M2_file(std::string filename)
 
         //stop timer and print time
         m2file << "t4 = cpuTime();" << std::endl;
-        m2file << "f = openOutAppend \"minimalBetti_m2_times.txt\"" << std::endl;
+        m2file << "f = openOutAppend \"minimal_betti_m2_times.txt\"" << std::endl;
         m2file << "f << t2 - t1 << \" \" << t3 - t2 << \" \" << t4 - t3 << endl" << std::endl;
         
         //finished writing to the file

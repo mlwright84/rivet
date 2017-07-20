@@ -1,11 +1,11 @@
 # Use a singly-graded M2 file to produce a Singular file.
-# RUN THIS SCRIPT BEFORE THE M2 FILES ARE SIMPLIFIED
+# This script should be run AFTER the 0th homology files are simplified.
 
 import os
 import string
 import re
 
-for file_name in os.listdir():
+for file_name in os.listdir("singly_graded/"):
 	if not file_name.endswith("singly_graded.m2"):
 		continue
 	is_0th_homol = True if file_name[-18:-17] == '0' else False
@@ -14,7 +14,7 @@ for file_name in os.listdir():
 
 	# Open f1 for writing and f2 for reading
 	f1 = open(res_file, "w")
-	f2 = open(file_name, "r")
+	f2 = open("singly_graded/" + file_name, "r")
 
 	# Start writing to the new file
 	f1.write('LIB "homolog.lib";\n')
@@ -27,12 +27,12 @@ for file_name in os.listdir():
 	# We can discard the information given by C2.
 	c2 = f2.readline()
 	if c2[:6] != "C2=R^{" or c2[-2:] != "}\n":
-		print("Warning: unexpected format of M2 file on line 2")
+		print("Warning: unexpected format of M2 file for c2")
 
-	# Collect the information given in C1
+	# Collect the information given in C1.
 	c1 = f2.readline()
 	if c1[:6] != "C1=R^{" or c1[-2:] != "}\n":
-		print("Warning: unexpected format of M2 file on line 3")
+		print("Warning: unexpected format of M2 file for c1")
 	if len(c1) != 8:
 		c1_strings = c1[7:-3].split("},{")
 		# Remove the minus sign if the number is not 0
@@ -44,29 +44,29 @@ for file_name in os.listdir():
 		print("Warning: Nothing contained in c1 of M2 file")
 		f1.write("intvec single_grades_C1;\n")
 
-	# Also collect C0. However, what we write depends on the homology.
-	c0 = f2.readline()
-	if c0[:6] != "C0=R^{" or c1[-2:] != "}\n":
-		print("Warning: unexpected format of M2 file on line 4")
+	# Collect C0 only if working in non-0th homology.
 	if not is_0th_homol:
+		c0 = f2.readline()
+		if c0[:6] != "C0=R^{" or c0[-2:] != "}\n":
+			print("Warning: unexpected format of M2 file for c0")
 		c0_strings = c0[7:-3].split("},{")
 		# Remove the minus sign if the number is not 0
 		c0_strings = map(lambda x : x if x == "0" else x[1:], c0_strings)
 		f1.write("intvec single_grades_C0=")
-		f1.write(",".join(c1_strings))
-		f1.write("\n")
+		f1.write(",".join(c0_strings))
+		f1.write(";\n")
 	else:
 		f1.write("//No C0 for 0th homology\n")
 
-	# Line5 should be Id=promote(1,R).
+	# Next line should be Id=promote(1,R).
 	if f2.readline() != "Id=promote(1,R)\n":
-		print("Warning: unexpected format of M2 file on line 5")
+		print("Warning: expected Id=promote(1,R) but got something else")
 
 	# Collect the data to make d2. We do this by extracting all the ordered pairs first, since 
 	# the columns of d2 are identified one at a time.
 	d2 = f2.readline()
 	if d2[:14] != "d2=map(C1,C2,{" or d2[-4:] != "});\n":
-		print("Warning: unexpected format of M2 file on line 6")
+		print("Warning: unexpected format of M2 file for d2")
 	f1.write("module d2;\n")
 	# d2_pieces contains things of the form (a,b)=>c, where a and b are integers and c is a monomial
 	d2_pieces = re.findall(r"\(.*?\)=>[^,]*", d2[14:-4])
@@ -92,15 +92,15 @@ for file_name in os.listdir():
 	for key in d2_dict:
 		f1.write("d2[%d]=" % (key + 1))
 		pairs = d2_dict[key]
-		terms = map(lambda x : "%s*gen(%d)" % (x[1], x[0]), pairs)
+		terms = map(lambda x : "%sgen(%d)" % ("" if x[1] == "Id" else (x[1] + "*"), x[0] + 1), pairs)
 		f1.write("%s;\n" % "+".join(terms))
 
 	# Repeat for d1. Once again, this is irrelevant for 0th homology.
-	d1 = f2.readline()
-	if d1[:14] != "d1=map(C0,C1,{" or d1[-4:] != "});\n":
-		print("Warning: unexpected format of M2 file on line 7")
-	# d2_pieces contains things of the form (a,b)=>c, where a and b are integers and c is a monomial
 	if not is_0th_homol:
+		d1 = f2.readline()
+		if d1[:14] != "d1=map(C0,C1,{" or d1[-4:] != "});\n":
+			print("Warning: unexpected format of M2 file on line 7")
+		# d2_pieces contains things of the form (a,b)=>c, where a and b are integers and c is a monomial
 		f1.write("module d1;\n")
 		d1_pieces = re.findall(r"\(.*?\)=>[^,]*", d1[14:-4])
 		d1_dict = dict()
@@ -123,10 +123,10 @@ for file_name in os.listdir():
 				d1_dict[y_val] = [(x_val, monomial)]
 		# Data collected; now, output it to the file.
 		for key in d1_dict:
-			f1.write("d1[%d]=" % key)
+			f1.write("d1[%d]=" % (key + 1))
 			pairs = d1_dict[key]
-			terms = map(lambda x : "%s*gen(%d)" % (x[1], x[0] + 1), pairs)
-			f1.write("+".join(terms))
+			terms = map(lambda x : "%sgen(%d)" % ("" if x[1] == "Id" else (x[1] + "*"), x[0] + 1), pairs)
+			f1.write("%s;\n" % "+".join(terms))
 	else:
 		f1.write("//No d1 for 0th homology\n")
 
@@ -137,26 +137,26 @@ for file_name in os.listdir():
 		f1.write('attrib(d2,"isHomog",single_grades_C1);\n')
 		f1.write('timer=0;\n')
 		f1.write('system("--ticks-per-sec",1000); //timer resolution in ms\n')
-		f1.write('int t_0=timer;\n')
+		f1.write('int t0=timer;\n')
 		f1.write('resolution resH=res(d2,0);\n')	
-		f1.write('write(":a singular_res_times.txt", timer - t_0);\n')
+		f1.write('int t1 = timer - t0;\n')
 		f1.write('print(betti(resH), "betti");\n')
-		f1.write('write(":a singular_res_times.txt", timer - t_0);\n')
-		f1.write('write(":a singular_res_times.txt", "\\n");\n')
+		f1.write('int t2 = timer - t1;\n')
+		f1.write('write(":a singular_res_times.txt", string(t1, " ", t2));\n')
 	else:
 		f1.write('attrib(d2,"isHomog",single_grades_C1);\n')
 		f1.write('attrib(d1,"isHomog",single_grades_C0);\n')
 		f1.write('timer=0;\n')
 		f1.write('system("--ticks-per-sec",1000); //timer resolution in ms\n')
-		f1.write('int t_0=timer;\n')
+		f1.write('int t0=timer;\n')
 		f1.write('module triv=0;\n')
 		f1.write('def H=homology(d2,d1,triv,triv);\n')
-		f1.write('write(":a singular_res_times.txt", timer - t_0);\n')
+		f1.write('int t1 = timer - t0;\n')
 		f1.write('resolution resH=res(H,0);\n')	
-		f1.write('write(":a singular_res_times.txt", timer - t_0);\n')
+		f1.write('int t2 = timer - t1;\n')
 		f1.write('print(betti(resH), "betti");\n')
-		f1.write('write(":a singular_res_times.txt", timer - t_0);\n')
-		f1.write('write(":a singular_res_times.txt", "\\n");\n')
+		f1.write('int t3 = timer - t2;\n')
+		f1.write('write(":a singular_res_times.txt", string(t1, " ", t2, " ", t3));\n')
 	f1.close()
 
 	# Copy the lines into another file, with a couple of tweaks -- repeat with sres()
@@ -170,3 +170,6 @@ for file_name in os.listdir():
 			.replace("singular_res_times.txt", "singular_sres_times.txt"))
 	f1.close()
 	f2.close()
+
+	os.system("mv %s singly_graded/%s" % (sres_file, sres_file))
+	os.system("mv %s singly_graded/%s" % (res_file, res_file))

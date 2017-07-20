@@ -9,17 +9,18 @@ for r, d, files in os.walk("./"):
 			if file.endswith("bigraded.m2"):
 				num_pts = int(file[13:16])
 				homol = int(file[-13:-12])
-				with open("bigraded/bigraded_m2_times.txt", "a") as write_file:
+				with open("bigraded_m2_times.txt", "a") as write_file:
 					write_file.write("homol%d pts%d " % (homol, num_pts))
 			elif file.endswith("singly_graded.m2"):
 				num_pts = int(file[13:16])
 				homol = int(file[-18:-17])
-				with open("singly_graded/singly_graded_m2_times.txt", "a") as write_file:
+				with open("singly_graded_m2_times.txt", "a") as write_file:
 					write_file.write("homol%d pts%d " % (homol, num_pts))
 			elif file.endswith("minimal_betti.m2"):
 				num_pts = int(file[13:16])
 				homol = int(file[-18:-17])
-				with open("minimal_betti/minimal_betti_m2_times.txt", "a") as write_file:
+				with open("minimal_betti_m2_times.txt", "a") as write_file:
 					write_file.write("homol%d pts%d " % (homol, num_pts))
 			# Get timing data
-			os.system("M2 << %s" % file)
+			os.system("M2 < %s" % os.path.join(r, file))
+
