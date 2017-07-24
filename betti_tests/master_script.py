@@ -24,3 +24,4 @@ os.system("python3 time_M2.py")
 os.system("python3 time_Singular.py")
 
 # TODO: Assemble some statistics
+os.system("python3 statistics.py")

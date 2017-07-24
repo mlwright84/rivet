@@ -141,7 +141,7 @@ for file_name in os.listdir("singly_graded/"):
 		f1.write('resolution resH=res(d2,0);\n')	
 		f1.write('int t1 = timer - t0;\n')
 		f1.write('print(betti(resH), "betti");\n')
-		f1.write('int t2 = timer - t1;\n')
+		f1.write('int t2 = timer - t1 - t0;\n')
 		f1.write('write(":a singular_res_times.txt", string(t1, " ", t2));\n')
 	else:
 		f1.write('attrib(d2,"isHomog",single_grades_C1);\n')
@@ -153,9 +153,9 @@ for file_name in os.listdir("singly_graded/"):
 		f1.write('def H=homology(d2,d1,triv,triv);\n')
 		f1.write('int t1 = timer - t0;\n')
 		f1.write('resolution resH=res(H,0);\n')	
-		f1.write('int t2 = timer - t1;\n')
+		f1.write('int t2 = timer - t1 - t0;\n')
 		f1.write('print(betti(resH), "betti");\n')
-		f1.write('int t3 = timer - t2;\n')
+		f1.write('int t3 = timer - t2 - t1 - t0;\n')
 		f1.write('write(":a singular_res_times.txt", string(t1, " ", t2, " ", t3));\n')
 	f1.close()
 
