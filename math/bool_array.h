@@ -19,7 +19,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 **********************************************************************/
 //
 // Created by Bryn Keller on 11/22/16.
+// Modified by Matthew Wright on 30 June 2017.
 //
+
+// TODO: change the name of this class -- it's now an int array!
 
 #ifndef RIVET_CONSOLE_BOOL_ARRAY_H
 #define RIVET_CONSOLE_BOOL_ARRAY_H
@@ -30,11 +33,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 class bool_array {
 public:
     bool_array(unsigned long rows, unsigned long cols);
-    bool& at(unsigned long row, unsigned long col);
+    int& at(unsigned long row, unsigned long col);
 
 private:
     unsigned long cols;
-    std::unique_ptr<bool[]> array;
+    std::unique_ptr<int[]> array;
 };
 
 #endif //RIVET_CONSOLE_BOOL_ARRAY_H

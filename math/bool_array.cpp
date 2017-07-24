@@ -25,8 +25,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 bool_array::bool_array(unsigned long rows, unsigned long cols)
     : cols(cols)
-    , array(new bool[rows * cols])
+    , array(new int[rows * cols])
 {
 }
 
-bool& bool_array::at(unsigned long row, unsigned long col) { return array[row * cols + col]; }
+int& bool_array::at(unsigned long row, unsigned long col) { return array[row * cols + col]; }

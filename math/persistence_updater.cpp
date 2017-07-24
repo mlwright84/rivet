@@ -66,7 +66,7 @@ PersistenceUpdater::PersistenceUpdater(Arrangement& m, SimplexTree& b, std::vect
 //resets the matrices and does a standard persistence calculation for expensive crossings
 void PersistenceUpdater::store_barcodes_with_reset(std::vector<std::shared_ptr<Halfedge>>& path, Progress& progress)
 {
-
+/*
     // PART 1: GET THE BOUNDARY MATRICES WITH PROPER SIMPLEX ORDERING
 
     Timer timer;
@@ -347,6 +347,7 @@ void PersistenceUpdater::store_barcodes_with_reset(std::vector<std::shared_ptr<H
 
     delete R_low_initial;
     delete R_high_initial;
+*/
 } //end store_barcodes_with_reset()
 
 //function to set the "edge weights" for each anchor line
@@ -944,6 +945,7 @@ unsigned long PersistenceUpdater::move_high_columns(int s, unsigned n, int t)
 //  for LOW simplices
 void PersistenceUpdater::vineyard_update_low(unsigned a)
 {
+/*
     unsigned b = a + 1;
 
     bool a_pos = (R_low->low(a) == -1); //true iff simplex corresponding to column a is positive
@@ -1042,12 +1044,14 @@ void PersistenceUpdater::vineyard_update_low(unsigned a)
         //finally, for cases 2 and 3, transpose columns of U
         U_low->swap_columns(a);
     }
+*/
 } //end vineyard_update_low()
 
 //performs a vineyard update corresponding to the transposition of columns a and (a + 1)
 //  for HIGH simplices
 void PersistenceUpdater::vineyard_update_high(unsigned a)
 {
+/*
     unsigned b = a + 1;
 
     bool a_pos = (R_high->low(a) == -1); //true iff simplex corresponding to column a is positive
@@ -1108,6 +1112,7 @@ void PersistenceUpdater::vineyard_update_high(unsigned a)
         //finally, for Cases 2 and 3, transpose columns of U
         U_high->swap_columns(a);
     }
+*/
 } //end vineyard update_high()
 
 //swaps two blocks of columns by updating the total order on columns, then rebuilding the matrices and computing a new RU-decomposition

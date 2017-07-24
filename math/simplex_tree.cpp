@@ -254,7 +254,7 @@ void SimplexTree::build_VR_subtree(std::vector<unsigned>& times,
 
 //returns a matrix of boundary information for simplices of the given dimension (with multi-grade info)
 //columns ordered according to dimension index (reverse-lexicographic order with respect to multi-grades)
-MapMatrix* SimplexTree::get_boundary_mx(unsigned dim)
+MapMatrix* SimplexTree::get_boundary_mx(unsigned dim, FFp& field)
 {
     //select set of simplices of dimension dim
     SimplexSet* simplices;
@@ -274,7 +274,7 @@ MapMatrix* SimplexTree::get_boundary_mx(unsigned dim)
     }
 
     //create the MapMatrix
-    MapMatrix* mat = new MapMatrix(num_rows, simplices->size()); //DELETE this object later!
+    MapMatrix* mat = new MapMatrix(num_rows, simplices->size(), field); //DELETE this object later!
 
     //if we want a matrix for 0-simplices, then we are done
     if (dim == 0)
@@ -283,7 +283,7 @@ MapMatrix* SimplexTree::get_boundary_mx(unsigned dim)
     //loop through simplices, writing columns to the matrix
     int col = 0; //column counter
     for (SimplexSet::iterator it = simplices->begin(); it != simplices->end(); ++it) {
-        write_boundary_column(mat, *it, col, 0);
+        write_boundary_column(mat, *it, col, 0, field);
 
         col++;
     }
@@ -296,17 +296,17 @@ MapMatrix* SimplexTree::get_boundary_mx(unsigned dim)
 //    simplex_order is a map : dim_index --> order_index for simplices of the given dimension
 //        if simplex_order[i] == -1, then simplex with dim_index i is NOT represented in the boundary matrix
 //    num_simplices is the number of simplices in the order (i.e., the number of entries in the vector that are NOT -1)
-MapMatrix_Perm* SimplexTree::get_boundary_mx(std::vector<int>& coface_order, unsigned num_simplices)
+MapMatrix_Perm* SimplexTree::get_boundary_mx(std::vector<int>& coface_order, unsigned num_simplices, FFp& field)
 {
     //create the matrix
-    MapMatrix_Perm* mat = new MapMatrix_Perm(ordered_low_simplices.size(), num_simplices);
+    MapMatrix_Perm* mat = new MapMatrix_Perm(ordered_low_simplices.size(), num_simplices, field);
 
     //loop through all simplices, writing columns to the matrix
     int dim_index = 0; //tracks our position in the list of hom_dim-simplices
     for (SimplexSet::iterator it = ordered_simplices.begin(); it != ordered_simplices.end(); ++it) {
         int order_index = coface_order[dim_index]; //index of the matrix column which will store the boundary of this simplex
         if (order_index != -1) {
-            write_boundary_column(mat, *it, order_index, 0);
+            write_boundary_column(mat, *it, order_index, 0, field);
         }
 
         dim_index++; //increment the column counter
@@ -321,10 +321,10 @@ MapMatrix_Perm* SimplexTree::get_boundary_mx(std::vector<int>& coface_order, uns
 //    each vector is a map : dim_index --> order_index for simplices of the given dimension
 //        if order[i] == -1, then simplex with dim_index i is NOT represented in the boundary matrix
 //    each unsigned is the number of simplices in the corresponding order (i.e., the number of entries in the vector that are NOT -1)
-MapMatrix_Perm* SimplexTree::get_boundary_mx(std::vector<int>& face_order, unsigned num_faces, std::vector<int>& coface_order, unsigned num_cofaces)
+MapMatrix_Perm* SimplexTree::get_boundary_mx(std::vector<int>& face_order, unsigned num_faces, std::vector<int>& coface_order, unsigned num_cofaces, FFp& field)
 {
     //create the matrix
-    MapMatrix_Perm* mat = new MapMatrix_Perm(num_faces, num_cofaces);
+    MapMatrix_Perm* mat = new MapMatrix_Perm(num_faces, num_cofaces, field);
 
     //loop through all simplices, writing columns to the matrix
     int dim_index = 0; //tracks our position in the list of (hom_dim+1)-simplices
@@ -349,8 +349,12 @@ MapMatrix_Perm* SimplexTree::get_boundary_mx(std::vector<int>& face_order, unsig
                     throw std::runtime_error("SimplexTree::get_boundary_mx(): Facet simplex not found.");
                 int facet_order_index = face_order[facet_node->dim_index()];
 
-                //for this boundary simplex, enter "1" in the appropriate cell in the matrix
-                mat->set(facet_order_index, order_index);
+                //set the appropriate matrix entry to +1 or -1, depending on the orientation of this boundary simplex
+                element orientation = 1;
+                if (field.order() != 2 && k % 2 == 1) {
+                    orientation = field.to_element(-1);
+                }
+                mat->set(facet_order_index, order_index, orientation);
             }
         }
         dim_index++; //increment the column counter
@@ -361,7 +365,7 @@ MapMatrix_Perm* SimplexTree::get_boundary_mx(std::vector<int>& face_order, unsig
 } //end get_boundary_mx(int, vector<int>, vector<int>)
 
 //writes boundary information for simplex represented by sim in column col of matrix mat; offset allows for block matrices such as B+C
-void SimplexTree::write_boundary_column(MapMatrix* mat, STNode* sim, int col, int offset)
+void SimplexTree::write_boundary_column(MapMatrix* mat, STNode* sim, int col, int offset, FFp& field)
 {
     //get vertex list for this simplex
     std::vector<int> verts = find_vertices(sim->global_index());
@@ -384,8 +388,12 @@ void SimplexTree::write_boundary_column(MapMatrix* mat, STNode* sim, int col, in
             throw std::runtime_error("SimplexTree::write_boundary_column(): Facet simplex not found.");
         int facet_di = facet_node->dim_index();
 
-        //for this boundary simplex, enter "1" in the appropriate cell in the matrix
-        mat->set(facet_di + offset, col);
+        //set the appropriate matrix entry to +1 or -1, depending on the orientation of this boundary simplex
+        element orientation = 1;
+        if (field.order() != 2 && k % 2 == 1) {
+            orientation = field.to_element(-1);
+        }
+        mat->set(facet_di + offset, col, orientation);
     }
 } //end write_col();
 

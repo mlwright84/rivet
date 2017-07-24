@@ -37,6 +37,8 @@ class MapMatrix;
 class SimplexTree;
 class TemplatePoint;
 
+#include "FFp.hpp"
+
 #include <boost/multi_array.hpp>
 typedef boost::multi_array<unsigned, 2> unsigned_matrix;
 
@@ -48,7 +50,7 @@ typedef std::vector<int> Vector;
 class MultiBetti {
 public:
     //constructor: sets up the data structure but does not compute xi_0 or xi_1
-    MultiBetti(SimplexTree& st, int dim); 
+    MultiBetti(SimplexTree& st, int dim, unsigned prime); 
 
     //computes xi_0 and xi_1, and also stores dimension of homology at each grade in the supplied matrix
     void compute(unsigned_matrix& hom_dims, Progress& progress);
@@ -71,6 +73,7 @@ private:
     const int dimension; //dimension of homology to compute
     unsigned num_x_grades; //number of grades in primary direction
     unsigned num_y_grades; //number of grades in secondary direction
+    FFp field; //prime-order field
     boost::multi_array<int, 3> xi; //matrix to hold xi values; indices: xi[x][y][subscript]
     const unsigned verbosity; //controls display of output, for debugging
 

@@ -43,6 +43,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class IndexMatrix;
 
+#include "FFp.hpp" //for prime fields
+
 #include <ostream> //for testing
 #include <vector>
 
@@ -50,43 +52,48 @@ class IndexMatrix;
 //written here using column-priority terminology, but this class is meant to be inherited, not instantiated directly
 class MapMatrix_Base {
 protected:
-    MapMatrix_Base(unsigned rows, unsigned cols); //constructor to create matrix of specified size (all entries zero)
-    MapMatrix_Base(unsigned size); //constructor to create a (square) identity matrix
+    MapMatrix_Base(unsigned rows, unsigned cols, FFp& field); //constructor to create matrix of specified size (all entries zero)
+    MapMatrix_Base(unsigned size, FFp& field); //constructor to create a (square) identity matrix
     virtual ~MapMatrix_Base(); //destructor
 
     virtual unsigned width() const; //returns the number of columns in the matrix
     virtual unsigned height() const; //returns the number of rows in the matrix
 
-    virtual void set(unsigned i, unsigned j); //sets (to 1) the entry in row i, column j
+    virtual void set(unsigned i, unsigned j, element value); //sets (to value) the entry in row i, column j
     virtual void clear(unsigned i, unsigned j); //clears (sets to 0) the entry in row i, column j
-    virtual bool entry(unsigned i, unsigned j); //returns true if entry (i,j) is 1, false otherwise
+    virtual bool is_nonzero(unsigned i, unsigned j); //returns true if entry (i,j) is nonzero, false otherwise
+    virtual element get_entry(unsigned i, unsigned j); //returns the value at entry (i,j)
 
-    virtual void add_column(unsigned j, unsigned k); //adds column j to column k; RESULT: column j is not changed, column k contains sum of columns j and k (with mod-2 arithmetic)
+    virtual void add_column(unsigned j, unsigned k); //adds column j to column k; RESULT: column j is not changed, column k contains sum of columns j and k (with arithmetic in field F)
+    virtual void add_multiple(element m, unsigned j, unsigned k); //adds m copies of column j to column k; column j is not changed
 
     class MapMatrixNode { //subclass for the nodes in the MapMatrix
     public:
-        MapMatrixNode(unsigned row); //constructor
+        MapMatrixNode(unsigned row, element value); //constructor
 
         unsigned get_row(); //returns the row index
         void set_next(MapMatrixNode* n); //sets the pointer to the next node in the column
         MapMatrixNode* get_next(); //returns a pointer to the next node in the column
+        void set_value(element value); //sets the matrix entry (in prime field F_p) corresponding to this node
+        element get_value(); //gets the matrix entry (in prime field F_p) corresponding to this node
 
     private:
         unsigned row_index; //index of matrix row corresponding to this node
+        element fpval;      //nonzero matrix entry corresponding to this node (element of prime field F_p)
         MapMatrixNode* next; //pointer to the next entry in the column containing this node
     };
 
     std::vector<MapMatrixNode*> columns; //vector of pointers to nodes representing columns of the matrix
-
     unsigned num_rows; //number of rows in the matrix
+    FFp& F; //finite field in which the entries in this matrix live
 };
 
 //MapMatrix is a column-priority matrix designed for standard persistence calculations
 class MapMatrix : public MapMatrix_Base {
 public:
-    MapMatrix(unsigned rows, unsigned cols); //constructor to create matrix of specified size (all entries zero)
-    MapMatrix(unsigned size); //constructor to create a (square) identity matrix
-    MapMatrix(std::initializer_list<std::initializer_list<int>>);
+    MapMatrix(unsigned rows, unsigned cols, FFp& field); //constructor to create matrix of specified size (all entries zero)
+    MapMatrix(unsigned size, FFp& field); //constructor to create a (square) identity matrix
+    //MapMatrix(std::initializer_list<std::initializer_list<int>>);
     virtual ~MapMatrix(); //destructor
 
     friend std::ostream& operator<<(std::ostream&, const MapMatrix&);
@@ -96,14 +103,16 @@ public:
 
     void reserve_cols(unsigned num_cols); //requests that the columns vector have enough capacity for num_cols columns
 
-    virtual void set(unsigned i, unsigned j); //sets (to 1) the entry in row i, column j
-    virtual bool entry(unsigned i, unsigned j); //returns true if entry (i,j) is 1, false otherwise
+    virtual void set(unsigned i, unsigned j, element value); //sets (to value) the entry in row i, column j
+    virtual bool is_nonzero(unsigned i, unsigned j); //returns true if entry (i,j) is nonzero, false otherwise
+    virtual element get_entry(unsigned i, unsigned j); //returns the value at entry (i,j)
 
     virtual int low(unsigned j); //returns the "low" index in the specified column, or -1 if the column is empty
     bool col_is_empty(unsigned j); //returns true iff column j is empty (for columns that are not empty, this method is faster than low(j))
 
-    void add_column(unsigned j, unsigned k); //adds column j to column k; RESULT: column j is not changed, column k contains sum of columns j and k (with mod-2 arithmetic)
-    void add_column(MapMatrix* other, unsigned j, unsigned k); //adds column j from MapMatrix* other to column k of this matrix
+	void add_multiple(element m, unsigned j, unsigned k); //adds m copies of column j to column k; column j is not changed
+    void add_eliminate_low(unsigned j, unsigned k); //adds a multiple of column j to column k, in order to eliminate the low entry in column k; column j is not changed
+    void add_eliminate_low(MapMatrix* other, unsigned j, unsigned k); //adds column j from MapMatrix* other to column k of this matrix
 
     //copies NONZERO columns with indexes in [first, last] from other, appending them to this matrix to the right of all existing columns
     //  all row indexes in copied columns are increased by offset
@@ -121,13 +130,14 @@ public:
 class MapMatrix_RowPriority_Perm; //forward declaration
 class MapMatrix_Perm : public MapMatrix {
 public:
-    MapMatrix_Perm(unsigned rows, unsigned cols);
-    MapMatrix_Perm(unsigned size);
+    MapMatrix_Perm(unsigned rows, unsigned cols, FFp& field);
+    MapMatrix_Perm(unsigned size, FFp& field);
     MapMatrix_Perm(const MapMatrix_Perm& other); //copy constructor
     ~MapMatrix_Perm();
 
-    void set(unsigned i, unsigned j); //sets (to 1) the entry in row i, column j
-    bool entry(unsigned i, unsigned j); //returns true if entry (i,j) is 1, false otherwise
+    void set(unsigned i, unsigned j, element value); //sets (to value) the entry in row i, column j
+    bool is_nonzero(unsigned i, unsigned j); //returns true if entry (i,j) is nonzero, false otherwise
+    element get_entry(unsigned i, unsigned j); //returns the value at entry (i,j)
 
     //reduces this matrix, fills the low array, and returns the corresponding upper-triangular matrix for the RU-decomposition
     //  NOTE: only to be called before any rows are swapped!
@@ -159,18 +169,19 @@ protected:
 //MapMatrix stored in row-priority format, with row/column permutations, designed for upper-triangular matrices in vineyard updates
 class MapMatrix_RowPriority_Perm : public MapMatrix_Base {
 public:
-    MapMatrix_RowPriority_Perm(unsigned size); //constructs the identity matrix of specified size
+    MapMatrix_RowPriority_Perm(unsigned size, FFp& field); //constructs the identity matrix of specified size
     MapMatrix_RowPriority_Perm(const MapMatrix_RowPriority_Perm& other); //copy constructor
     ~MapMatrix_RowPriority_Perm();
 
     unsigned width() const; //returns the number of columns in the matrix
     unsigned height() const; //returns the number of rows in the matrix
 
-    void set(unsigned i, unsigned j); //sets (to 1) the entry in row i, column j
+    void set(unsigned i, unsigned j, element value); //sets (to value) the entry in row i, column j
     void clear(unsigned i, unsigned j); //clears (sets to 0) the entry in row i, column j
-    bool entry(unsigned i, unsigned j); //returns true if entry (i,j) is 1, false otherwise
+    bool is_nonzero(unsigned i, unsigned j); //returns true if entry (i,j) is nonzero, false otherwise
+    element get_entry(unsigned i, unsigned j); //returns the value at entry (i,j)
 
-    void add_row(unsigned j, unsigned k); //adds row j to row k; RESULT: row j is not changed, row k contains sum of rows j and k (with mod-2 arithmetic)
+    void add_multiple_row(element m, unsigned j, unsigned k); //adds m copies of row j to row k; row j is not changed
 
     void swap_rows(unsigned i); //transposes rows i and i+1
     void swap_columns(unsigned j); //transposes columns j and j+1
@@ -185,3 +196,80 @@ protected:
 };
 
 #endif // __MapMatrix_H__
+
+
+/*** TESTING MATRICES WITH PRIME FIELD ENTRIES ***
+
+#include <cstdlib> //for random numbers
+#include <iostream>
+
+int main(int argc, char* argv[])
+{
+    int p = 7;
+    unsigned rows = 6;
+    unsigned cols = 8;
+
+    FFp F = FFp(p);
+    MapMatrix_Perm M = MapMatrix_Perm(rows, cols, F);
+    std::cout << "Working in the field of order " << p << "\n";
+
+    //fill matrix
+    std::srand(100);
+    for(unsigned r = 0; r < M.height(); r++) {
+        for(unsigned c = 0; c < M.width(); c++) {
+            M.set(r, c, std::rand() % p);
+        }
+    }
+    std::cout << "Matrix:\n";
+    std::cout << M;
+
+    //do some operations
+    // std::cout << "Testing column operations:\n";
+    // for(unsigned c=1; c < M.width(); c++) {
+    //     std::cout << "  Adding " << F.to_element(c) << " times column 1 to column " << c << "\n";
+    //     M.add_multiple(F.to_element(c), 0, c);
+    // }
+    // std::cout << M;
+
+    //reduce the matrix
+    // std::vector<int> lows(M.width(), -1); //low array
+    // for (unsigned j = 0; j < M.width(); j++) {
+    //     //while column c is nonempty and its low number is found in the low array, do column operations
+    //     // std::cout << "column " << j << ": low row is " << M.low(j) << "; nonempty: " << (!M.col_is_empty(j)) << "\n";
+    //     while ( !M.col_is_empty(j) && lows[M.low(j)] >= 0) {
+    //     	//std::cout << "checkpoint\n";
+    //         int l = M.low(j);
+    //         int c = lows[l];
+
+    //         //add a multiple of column c to column j, to clear the low entry in column j
+    //         element w = M.get_entry(l,c);   //low element in column c
+    //         element a = M.get_entry(l,j);   //low element in column j
+    //         element m = F.mul(F.inv(w), F.neg(a)); //satisfies w*m + a = 0 in field F
+    //         // std::cout << "  Adding " << m << " times column " << c << " to column " << j << "\n";
+    //         M.add_multiple(m, c, j);        //perform row operation (add m copies of column c to column j)
+
+    //         // std::cout << M;
+    //         //M.add_eliminate_low(c, j);
+    //     }
+
+    //     if (!M.col_is_empty(j)) { //then column is still nonempty, so update lows
+    //         lows[M.low(j)] = j;
+    //         // std::cout << "stored " << j << " in lows[" << M.low(j) << "]\n";
+    //     }
+
+    //     std::cout << "Finished with column " << j << ":\n" << M;
+    // }
+
+    //test RU-decomposition
+    MapMatrix_RowPriority_Perm* U = M.decompose_RU();
+
+    std::cout << "Matrix R:\n";
+    M.print();
+    std::cout << "Matrix U:\n";
+    U->print();
+
+
+
+    return 0;
+}
+*/
