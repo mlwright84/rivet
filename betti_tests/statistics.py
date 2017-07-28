@@ -2,11 +2,23 @@
 
 import os
 import sys
+import csv
 
-sys.stdout = open("preliminary_times.txt", "w")
+output = open("timings.csv", "w")
+writer = csv.writer(output, delimiter = ",")
+rivet_header = ["RIVET", "homology", "points", "bifiltration time", "betti time"]
+macaulay_single_header = ["Macaulay2, singly graded", "homology", "points", "coker/homol time",
+	"prune time", "betti time", "display elements time"]
+macaulay_bi_header = ["Macaulay2, bigraded", "homology", "points", "coker/homol time",
+	"prune time", "betti time", "display elements time"]
+macaulay_minimal_header = ["Macaulay2, minimal_betti", "homology", "points", "coker/homol time",
+	"display elements time"]
+singular_res_header = ["Singular, res", "homology", "points", "homol time", "resolution time", "betti time"]
+singular_sres_header = ["Singular, sres", "homology", "points", "homol time", "resolution time", "betti time"]
+
 
 with open("rivet_timing.txt", "r") as read_file:
-	print("RIVET")
+	writer.writerow(rivet_header)
 	times = {}
 	for line in read_file:
 		homol = int(line[5:6])
@@ -21,14 +33,14 @@ with open("rivet_timing.txt", "r") as read_file:
 			times[key] = (bifilt_time, betti_time, 1)
 	for key in times:
 		(a, b, n) = times[key]
-		print("For homology %d with %d points: " % key)
-		print("\taverage bifiltration took %f seconds, betti computation took %f seconds." 
-			% (a/(1000*n), b/(1000*n)))
-	print()
+		writer.writerow(["", key[0], key[1], a/(1000*n), b/(1000*n)])
 
 for grade in ["singly_graded", "bigraded"]:
 	with open("%s_m2_times.txt" % grade, "r") as read_file:
-		print("Macaulay2, %s" % grade)
+		if grade == "singly_graded":
+			writer.writerow(macaulay_single_header)
+		else:
+			writer.writerow(macaulay_bi_header)
 		times = {}
 		for line in read_file:
 			homol = int(line[5:6])
@@ -45,19 +57,10 @@ for grade in ["singly_graded", "bigraded"]:
 				times[key] = (coker_or_homol_time, prune_time, betti_time, elements_time, 1)
 		for key in times:
 			(a, b, c, d, n) = times[key]
-			print("For homology %d with %d points: " % key)
-			if key[0] == 0:
-				print("\t average cokernel computation took %f seconds, prune computation took %f seconds;"
-					% (a/n, b/n))
-			else:
-				print("\t average homology computation took %f seconds, prune computation took %f seconds;"
-					% (a/n, b/n))
-			print("\t average betti computation took %f seconds, elements computation took %f seconds."
-				% (c/n, d/n))
-	print()
+			writer.writerow([" ", key[0], key[1], a/n, b/n, c/n, d/n])
 
 with open("minimal_betti_m2_times.txt", "r") as read_file:
-	print("Macaulay2, minimal_betti")
+	writer.writerow(macaulay_minimal_header)
 	times = {}
 	for line in read_file:
 		homol = int(line[5:6])
@@ -73,26 +76,19 @@ with open("minimal_betti_m2_times.txt", "r") as read_file:
 			times[key] = (coker_or_homol_time, minimal_betti_time, elements_time, 1)
 	for key in times:
 		(a, b, c, n) = times[key]
-		print("For homology %d with %d points: " % key)
-		if key[0] == 0:
-			print("\t average cokernel computation took %f seconds, minimal_betti computation took %f seconds;"
-				% (a/n, b/n))
-		else:
-			print("\t average homology computation took %f seconds, minimal_betti computation took %f seconds;"
-				% (a/n, b/n))
-		print("\t average elements computation took %f seconds."
-			% (c/n))
-
-
+		writer.writerow([" ", key[0], key[1], a/n, b/n, c/n])
 
 for fun in ["res", "sres"]:
 	with open("singular_%s_times.txt" % fun, "r") as read_file:
-		print("Singular, %s" % fun)
+		if fun == "res":
+			writer.writerow(singular_res_header)
+		else:
+			writer.writerow(singular_sres_header)
 		times = {}
 		for line in read_file:
 			homol = int(line[5:6])
 			pts = int(line.split()[1][3:])
-			betti_time = float(line.split()[-1])
+			betti_time = float(line.split()[-1])		#These are picked up backwards
 			resolution_time = float(line.split()[-2])
 			key = (homol, pts)
 			if key in times:
@@ -109,15 +105,11 @@ for fun in ["res", "sres"]:
 				else:
 					times[key] = (betti_time, resolution_time, float(line.split()[-3]), 1)
 		for key in times:
-			print("For homology %d with %d points: " % key)
 			if key[0] == 0:
 				(a, b, n) = times[key]
-				print("\t average resolution computation took %f seconds, betti computation took %f seconds."
-					% (b/(1000*n), a/(1000*n)))
+				writer.writerow([" ", key[0], key[1], 0, b/(1000*n), a/(1000*n)])
 			else:
 				(a, b, c, n) = times[key]
-				print("\t average homology computation took %f seconds;" % (c/(1000*n)))
-				print("\t average resolution computation took %f seconds, betti computation took %f seconds."
-					% (b/(1000*n), a/(1000*n)))
+				writer.writerow([" ", key[0], key[1], c/(1000*n), b/(1000*n), a/(1000*n)])
 
-sys.stdout.close()
+output.close()
