@@ -6,16 +6,14 @@ import csv
 
 output = open("timings.csv", "w")
 writer = csv.writer(output, delimiter = ",")
-rivet_header = ["RIVET", "homology", "points", "bifiltration time", "betti time"]
-macaulay_single_header = ["Macaulay2, singly graded", "homology", "points", "coker/homol time",
-	"prune time", "betti time", "display elements time"]
-macaulay_bi_header = ["Macaulay2, bigraded", "homology", "points", "coker/homol time",
-	"prune time", "betti time", "display elements time"]
-macaulay_minimal_header = ["Macaulay2, minimal_betti", "homology", "points", "coker/homol time",
-	"display elements time"]
-singular_res_header = ["Singular, res", "homology", "points", "homol time", "resolution time", "betti time"]
-singular_sres_header = ["Singular, sres", "homology", "points", "homol time", "resolution time", "betti time"]
-
+rivet_header = ["RIVET", "homology", "points", "total time", "bifiltration time", "betti time"]
+macaulay_single_header = ["Macaulay2, singly graded", "homology", "points", "total time", "coker/homol time",
+	"prune time", "betti time"]
+macaulay_bi_header = ["Macaulay2, bigraded", "homology", "points", "total time", "coker/homol time",
+	"prune time", "betti time"]
+macaulay_minimal_header = ["Macaulay2, minimal_betti", "homology", "points", "total time", "coker/homol time", "minimal_betti time"]
+singular_res_header = ["Singular, res", "homology", "points", "total time", "homol time", "resolution time", "betti time"]
+singular_sres_header = ["Singular, sres", "homology", "points", "total time", "homol time", "resolution time", "betti time"]
 
 with open("rivet_timing.txt", "r") as read_file:
 	writer.writerow(rivet_header)
@@ -31,9 +29,9 @@ with open("rivet_timing.txt", "r") as read_file:
 			times[key] = (a + bifilt_time, b + betti_time, n + 1)
 		else:
 			times[key] = (bifilt_time, betti_time, 1)
-	for key in times:
+	for key in sorted(times):
 		(a, b, n) = times[key]
-		writer.writerow(["", key[0], key[1], a/(1000*n), b/(1000*n)])
+		writer.writerow(["", key[0], key[1], (a+b)/(1000*n), a/(1000*n), b/(1000*n)])
 
 for grade in ["singly_graded", "bigraded"]:
 	with open("%s_m2_times.txt" % grade, "r") as read_file:
@@ -55,9 +53,10 @@ for grade in ["singly_graded", "bigraded"]:
 				times[key] = (a + coker_or_homol_time, b + prune_time, c + betti_time, d + elements_time, n + 1)
 			else:
 				times[key] = (coker_or_homol_time, prune_time, betti_time, elements_time, 1)
-		for key in times:
+		for key in sorted(times):
 			(a, b, c, d, n) = times[key]
-			writer.writerow([" ", key[0], key[1], a/n, b/n, c/n, d/n])
+			#time to display elements not printed
+			writer.writerow([" ", key[0], key[1], (a+b+c)/n, a/n, b/n, c/n])
 
 with open("minimal_betti_m2_times.txt", "r") as read_file:
 	writer.writerow(macaulay_minimal_header)
@@ -74,9 +73,10 @@ with open("minimal_betti_m2_times.txt", "r") as read_file:
 			times[key] = (a + coker_or_homol_time, b + minimal_betti_time, c + elements_time, n + 1)
 		else:
 			times[key] = (coker_or_homol_time, minimal_betti_time, elements_time, 1)
-	for key in times:
+	for key in sorted(times):
 		(a, b, c, n) = times[key]
-		writer.writerow([" ", key[0], key[1], a/n, b/n, c/n])
+		#time to display elements not printed
+		writer.writerow([" ", key[0], key[1], (a+b)/n, a/n, b/n])
 
 for fun in ["res", "sres"]:
 	with open("singular_%s_times.txt" % fun, "r") as read_file:
@@ -104,12 +104,12 @@ for fun in ["res", "sres"]:
 					times[key] = (betti_time, resolution_time, 1)
 				else:
 					times[key] = (betti_time, resolution_time, float(line.split()[-3]), 1)
-		for key in times:
+		for key in sorted(times):
 			if key[0] == 0:
 				(a, b, n) = times[key]
-				writer.writerow([" ", key[0], key[1], 0, b/(1000*n), a/(1000*n)])
+				writer.writerow([" ", key[0], key[1], (a+b)/(1000*n), 0, b/(1000*n), a/(1000*n)])
 			else:
 				(a, b, c, n) = times[key]
-				writer.writerow([" ", key[0], key[1], c/(1000*n), b/(1000*n), a/(1000*n)])
+				writer.writerow([" ", key[0], key[1], (a+b+c)/(1000*n), c/(1000*n), b/(1000*n), a/(1000*n)])
 
 output.close()
