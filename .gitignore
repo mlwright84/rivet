@@ -9,6 +9,8 @@ RIVET.app/
 .idea
 cmake_install.cmake
 *.txt
+*.m2
+*.sing
 moc_aboutmessagebox.cpp
 moc_computationthread.cpp
 moc_configuredialog.cpp
