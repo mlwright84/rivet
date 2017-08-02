@@ -7,7 +7,7 @@ import os
 for homology in range(2):
 	for filename in os.listdir():
 		if filename.endswith(".txt"):
-			os.system("./../build/rivet_console %s --betti -H %d -V 2" % (filename, homology))
+			os.system("./../build/rivet_console %s --betti -H %d" % (filename, homology))
 
 os.system("mkdir bigraded")
 os.system("mkdir singly_graded")

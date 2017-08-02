@@ -16,5 +16,4 @@ if not input("Type 'hopscotch' to delete all the data files. ") == 'hopscotch':
 for r, d, files in os.walk("./"):
 	for file in files:
 		if file.endswith(".m2") or file.endswith(".sing") or file.endswith(".txt"):
-			print("Test: deleting file %s" % os.path.join(r, file))
-			#os.system("rm %s" % os.path.join(r, file))
+			os.system("rm %s" % os.path.join(r, file))
