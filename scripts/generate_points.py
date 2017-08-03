@@ -2,8 +2,8 @@
 
 import os
 
-#final plan : sizes = [25, 50, 100, 200, 400, 800]
-sizes = [25, 50] #testing on a small number
+#sizes = [25, 50, 100, 200, 400, 800]
+sizes = [20, 50]
 
 for n in sizes:
 	os.system("python3 points_noisy_circle.py %i" % n)

@@ -633,7 +633,8 @@ void SimplexTree::write_bigraded_M2_file(std::string filename)
 {
     //open the file
     std::string m2filename = 
-    	filename.substr(0, filename.size() - 4).append("_homol_" + std::to_string(hom_dim) + "_bigraded.m2");
+    	filename.substr(0, filename.size() - 4).append(
+            "_mod_2_homol_" + std::to_string(hom_dim) + "_bigraded.m2");
     std::ofstream m2file(m2filename);
 
     if(m2file.is_open())
@@ -710,8 +711,8 @@ void SimplexTree::write_bigraded_M2_file(std::string filename)
         m2file << "});" << std::endl;
 
         //write lines of M2 code to check for mistakes
-        m2file << "isHomogeneous(d2)" << std::endl;
-        m2file << "isHomogeneous(d1)" << std::endl;
+        //m2file << "isHomogeneous(d2)" << std::endl;
+        //m2file << "isHomogeneous(d1)" << std::endl;
 
         //start a timer
         m2file << "t1 = cpuTime();" << std::endl;
@@ -744,7 +745,8 @@ void SimplexTree::write_singly_graded_M2_file(std::string filename)
 {
     //open the file
     std::string m2filename = 
-    	filename.substr(0, filename.size() - 4).append("_homol_" + std::to_string(hom_dim) + "_singly_graded.m2");
+    	filename.substr(0, filename.size() - 4).append(
+            "_mod_2_homol_" + std::to_string(hom_dim) + "_singly_graded.m2");
     std::ofstream m2file(m2filename);
 
     if(m2file.is_open())
@@ -851,8 +853,8 @@ void SimplexTree::write_singly_graded_M2_file(std::string filename)
         m2file << "});" << std::endl;
 
         //write lines of M2 code to check for mistakes
-        m2file << "isHomogeneous(d2)" << std::endl;
-        m2file << "isHomogeneous(d1)" << std::endl;
+        //m2file << "isHomogeneous(d2)" << std::endl;
+        //m2file << "isHomogeneous(d1)" << std::endl;
 
         //start a timer
         m2file << "t1 = cpuTime();" << std::endl;
@@ -885,7 +887,8 @@ void SimplexTree::write_minimal_betti_M2_file(std::string filename)
 {
     //open the file
     std::string m2filename = 
-    	filename.substr(0, filename.size() - 4).append("_homol_" + std::to_string(hom_dim) + "_minimal_betti.m2");
+    	filename.substr(0, filename.size() - 4).append(
+            "_mod_2_homol_" + std::to_string(hom_dim) + "_minimal_betti.m2");
     std::ofstream m2file(m2filename);
 
     if(m2file.is_open())
@@ -992,8 +995,8 @@ void SimplexTree::write_minimal_betti_M2_file(std::string filename)
         m2file << "});" << std::endl;
 
         //write lines of M2 code to check for mistakes
-        m2file << "isHomogeneous(d2)" << std::endl;
-        m2file << "isHomogeneous(d1)" << std::endl;
+        //m2file << "isHomogeneous(d2)" << std::endl;
+        //m2file << "isHomogeneous(d1)" << std::endl;
 
         //start a timer
         m2file << "t1 = cpuTime();" << std::endl;

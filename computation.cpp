@@ -40,13 +40,6 @@ Computation::~Computation()
 
 void Computation::compute_raw(ComputationInput& input)
 {
-    std::ofstream output;
-    output.open("rivet_timing.txt", std::ios_base::app);
-    Timer timer;
-    timer.restart();
-    long time;
-
-
     if (verbosity >= 2) {
         debug() << "\nBIFILTRATION:";
         debug() << "   Number of simplices of dimension " << params.dim << " : " << input.bifiltration().get_size(params.dim);
@@ -63,20 +56,19 @@ void Computation::compute_raw(ComputationInput& input)
         }
     }
 
-    time = timer.elapsed();
-    debug() << "  -- bifiltration computation took " << time << " milliseconds";
-    output << "homol" << params.dim << " " << "pts" << params.shortName.substr(13, 3) << " ";
-    output << time << " ";
+    
 
     //write Macaulay2 file for computing Betti numbers
     if (verbosity >= 2) {
         debug() << "WRITING Macaulay2 FILES FOR COMPUTING BETTI NUMBERS";
     }
 
+    if (params.prime == 2) {
     input.bifiltration().write_bigraded_M2_file(params.shortName);
     input.bifiltration().write_singly_graded_M2_file(params.shortName);
     input.bifiltration().write_minimal_betti_M2_file(params.shortName);
-
+    }
+    
     if (verbosity >= 2) {
         debug() << "  -- Macaulay2 file written";
     }
@@ -88,16 +80,26 @@ void Computation::compute_raw(ComputationInput& input)
     if (verbosity >= 2) {
         debug() << "COMPUTING xi_0, xi_1, AND xi_2 FOR HOMOLOGY DIMENSION " << params.dim << " IN FIELD F_" << params.prime << ":";
     }
-    
+
+    //set up the timer
+    std::ofstream output;
+    output.open("rivet_timing.txt", std::ios_base::app);
+    Timer timer;
+    long time;
+
     MultiBetti mb(input.bifiltration(), params.dim, params.prime);
+    
     timer.restart();
+    
     mb.compute(result->homology_dimensions, progress);
     mb.compute_xi2(result->homology_dimensions);
 
-    if (verbosity >= 2) {
-        time = timer.elapsed();
+    time = timer.elapsed();
+    output << "homol" << params.dim << " pts" << params.shortName.substr(13, 3) << " mod" << params.prime << " 0 ";
+    output << time << "\n";
+    
+    if (verbosity >= 2) { 
         debug() << "  -- xi_i computation took " << time << " milliseconds";
-        output << time << "\n";
     }
 
     output.close();
@@ -105,7 +107,7 @@ void Computation::compute_raw(ComputationInput& input)
     //store the xi support points
     mb.store_support_points(result->template_points);
 
-    template_points_ready(TemplatePointsMessage{ input.x_label, input.y_label, result->template_points, result->homology_dimensions, input.x_exact, input.y_exact }); //signal that xi support points are ready for visualization
+    //template_points_ready(TemplatePointsMessage{ input.x_label, input.y_label, result->template_points, result->homology_dimensions, input.x_exact, input.y_exact }); //signal that xi support points are ready for visualization
     progress.advanceProgressStage(); //update progress box to stage 4
 
     //STAGES 4 and 5: BUILD THE LINE ARRANGEMENT AND COMPUTE BARCODE TEMPLATES

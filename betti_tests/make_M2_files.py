@@ -4,10 +4,13 @@
 
 import os
 
+primes = [2, 13]
+
 for homology in range(2):
-	for filename in os.listdir():
-		if filename.endswith(".txt"):
-			os.system("./../build/rivet_console %s --betti -H %d" % (filename, homology))
+	for prime in primes:
+		for filename in os.listdir():
+			if filename.endswith(".txt"):
+				os.system("./../build/rivet_console %s --betti -H %d -p %d" % (filename, homology, prime))
 
 os.system("mkdir bigraded")
 os.system("mkdir singly_graded")

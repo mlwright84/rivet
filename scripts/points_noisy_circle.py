@@ -12,7 +12,7 @@ radius = 2           #mean radius of the annulus
 std_dev = 0.3        #standard deviation used for the radius of points selected from the annulus
 ball_radius = 1      #radius of ball around each point for calculating values of the density function
 rips_dist = 1000     #max distance for building the Rips complex (printed for the RIVET input file)
-num_files = 10       #make several samples
+num_files = 3       #make several samples
 
 if (num_files > 10):
 	raise Exception("Input style might assume file numbers are one-digit numbers")
