@@ -8,7 +8,9 @@ import re
 for file_name in os.listdir("singly_graded/"):
 	if not file_name.endswith("singly_graded.m2"):
 		continue
-	is_0th_homol = True if file_name[-18:-17] == '0' else False
+	words = file_name.split('_')
+	prime = int(words[6])
+	is_0th_homol = int(words[8]) == 0
 	res_file = file_name[:-3] + "_res.sing"
 	print("Writing the file %s" % res_file)
 
@@ -18,10 +20,11 @@ for file_name in os.listdir("singly_graded/"):
 
 	# Start writing to the new file
 	f1.write('LIB "homolog.lib";\n')
-	f1.write('ring R=2,(x,y),dp;\n')
+	f1.write('ring R=%d,(x,y),dp;\n' % prime)
 
-	# Line 1 should be "R=ZZ/2[x,y,Degrees=>{{1},{1}}]"
-	if f2.readline() != "R=ZZ/2[x,y,Degrees=>{{1},{1}}]\n":
+	# Line 1 should be "R=ZZ/p[x,y,Degrees=>{{1},{1}}]", where p is a prime.
+	line = f2.readline()
+	if not (line.startswith("R=ZZ/") and line.endswith("[x,y,Degrees=>{{1},{1}}]\n")):
 		print("Warning: unexpected format of M2 file on line 1 of file: %s" % file_name)
 
 	# We can discard the information given by C2.

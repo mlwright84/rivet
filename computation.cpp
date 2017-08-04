@@ -56,18 +56,14 @@ void Computation::compute_raw(ComputationInput& input)
         }
     }
 
-    
-
     //write Macaulay2 file for computing Betti numbers
     if (verbosity >= 2) {
         debug() << "WRITING Macaulay2 FILES FOR COMPUTING BETTI NUMBERS";
     }
 
-    if (params.prime == 2) {
-    input.bifiltration().write_bigraded_M2_file(params.shortName);
-    input.bifiltration().write_singly_graded_M2_file(params.shortName);
-    input.bifiltration().write_minimal_betti_M2_file(params.shortName);
-    }
+    input.bifiltration().write_bigraded_M2_file(params.shortName, params.prime);
+    input.bifiltration().write_singly_graded_M2_file(params.shortName, params.prime);
+    input.bifiltration().write_minimal_betti_M2_file(params.shortName, params.prime);
     
     if (verbosity >= 2) {
         debug() << "  -- Macaulay2 file written";

@@ -629,18 +629,18 @@ void SimplexTree::print_bifiltration(STNode* node, std::string parent, int cur_d
 
 ///// FUNCTIONS TO WRITE A Macaulay2 FILE FOR COMPUTING GRADED BETTI NUMBERS ///// 
 
-void SimplexTree::write_bigraded_M2_file(std::string filename)
+void SimplexTree::write_bigraded_M2_file(std::string filename, unsigned prime)
 {
     //open the file
     std::string m2filename = 
     	filename.substr(0, filename.size() - 4).append(
-            "_mod_2_homol_" + std::to_string(hom_dim) + "_bigraded.m2");
+            "_mod_" + std::to_string(prime) + "_homol_" + std::to_string(hom_dim) + "_bigraded.m2");
     std::ofstream m2file(m2filename);
 
     if(m2file.is_open())
     {
-        //work over the binary field
-        m2file << "R=ZZ/2[x,y,Degrees=>{{1,0},{0,1}}]" << std::endl;
+        //work over a specified field
+        m2file << "R=ZZ/" << std::to_string(prime) << "[x,y,Degrees=>{{1,0},{0,1}}]" << std::endl;
 
         //write the R-modules
         m2file << "C2=R^{";
@@ -741,18 +741,18 @@ void SimplexTree::write_bigraded_M2_file(std::string filename)
 
 }//end write_bigraded_M2_file()
 
-void SimplexTree::write_singly_graded_M2_file(std::string filename)
+void SimplexTree::write_singly_graded_M2_file(std::string filename, unsigned prime)
 {
     //open the file
     std::string m2filename = 
     	filename.substr(0, filename.size() - 4).append(
-            "_mod_2_homol_" + std::to_string(hom_dim) + "_singly_graded.m2");
+             "_mod_" + std::to_string(prime) + "_homol_" + std::to_string(hom_dim) + "_singly_graded.m2");
     std::ofstream m2file(m2filename);
 
     if(m2file.is_open())
     {
-        //work over the binary field
-        m2file << "R=ZZ/2[x,y,Degrees=>{{1},{1}}]" << std::endl;
+        //work over a specified field
+        m2file << "R=ZZ/" << std::to_string(prime) << "[x,y,Degrees=>{{1},{1}}]" << std::endl;
 
         //write the R-modules
         m2file << "C2=R^{";
@@ -883,18 +883,18 @@ void SimplexTree::write_singly_graded_M2_file(std::string filename)
 
 }//end write_singly_graded_M2_file()
 
-void SimplexTree::write_minimal_betti_M2_file(std::string filename)
+void SimplexTree::write_minimal_betti_M2_file(std::string filename, unsigned prime)
 {
     //open the file
     std::string m2filename = 
     	filename.substr(0, filename.size() - 4).append(
-            "_mod_2_homol_" + std::to_string(hom_dim) + "_minimal_betti.m2");
+            "_mod_" + std::to_string(prime) + "_homol_" + std::to_string(hom_dim) + "_minimal_betti.m2");
     std::ofstream m2file(m2filename);
 
     if(m2file.is_open())
     {
-        //work over the binary field
-        m2file << "R=ZZ/2[x,y,Degrees=>{1,1},MonomialOrder=>{Position=>Up}]" << std::endl;
+        //work over a specified field
+        m2file << "R=ZZ/" << std::to_string(prime) << "[x,y,Degrees=>{1,1},MonomialOrder=>{Position=>Up}]" << std::endl;
 
         //write the R-modules
         m2file << "C2=R^{";

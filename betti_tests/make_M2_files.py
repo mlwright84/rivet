@@ -1,16 +1,17 @@
-# There are a bunch of .txt files in this folder.
-# Make all the corresponding M2 files - bigraded, singly-graded w/o minimalBetti, and using minimalBetti
-# Also, this will collect timing data from RIVET.
+# This script collects timing data from RIVET, and also generates three types of Macaulay2 files.
+# Each Macaulay2 file is then moved to an appropriate folder.
+# Takes in one command-line argument, the prime field to be used.
+# The prime field defaults to 2 if no argument is given.
 
 import os
+import sys
 
-primes = [2, 13]
+prime = 2 if len(sys.argv) == 1 else int(sys.argv[1]) 
 
 for homology in range(2):
-	for prime in primes:
-		for filename in os.listdir():
-			if filename.endswith(".txt"):
-				os.system("./../build/rivet_console %s --betti -H %d -p %d" % (filename, homology, prime))
+	for filename in os.listdir():
+		if filename.endswith(".txt"):
+			os.system("./../build/rivet_console %s --betti -H %d -p %d" % (filename, homology, prime))
 
 os.system("mkdir bigraded")
 os.system("mkdir singly_graded")

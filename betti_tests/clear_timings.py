@@ -1,4 +1,4 @@
-# Delete all the timing files.
+# This script deletes all of the timing data collected.
 
 import os
 

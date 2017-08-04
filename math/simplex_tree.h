@@ -128,9 +128,9 @@ public:
     void print_bifiltration(STNode* node, std::string parent, int cur_dim, int print_dim);
 
     ///// FUNCTIONS TO WRITE A Macaulay2 FILE FOR COMPUTING GRADED BETTI NUMBERS ///// 
-    void write_bigraded_M2_file(std::string filename);
-    void write_singly_graded_M2_file(std::string filename);
-    void write_minimal_betti_M2_file(std::string filename);
+    void write_bigraded_M2_file(std::string filename, unsigned prime);
+    void write_singly_graded_M2_file(std::string filename, unsigned prime);
+    void write_minimal_betti_M2_file(std::string filename, unsigned prime);
     void write_M2_matrix_col(std::ofstream& stream, STNode* n, int col, bool& first_entry);
 
 
