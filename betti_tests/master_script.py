@@ -17,6 +17,9 @@ os.system("python3 reduce_0_homol.py")
 # Produce the Singular files, using the contents of the Macaulay2 files
 os.system("python3 singly_graded/m2_to_singular.py")
 
+# Produce timings for other prime fields as well
+os.system("python3 change_prime_fields.py")
+
 # Collect the timing data for M2.
 os.system("python3 time_M2.py")
 
