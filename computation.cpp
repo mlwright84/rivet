@@ -91,8 +91,18 @@ void Computation::compute_raw(ComputationInput& input)
     mb.compute_xi2(result->homology_dimensions);
 
     time = timer.elapsed();
-    output << "homol" << params.dim << " pts" << params.shortName.substr(13, 3) << " mod" << params.prime << " 0 ";
-    output << time << "\n";
+
+    //The output formatting looks like:
+    //  homolA ptsB modC D E
+    //where A is the homology degree, B is the number of points, C is the prime field,
+    //D is the bifiltration time, and E is the betti computation time.
+    //TODO: The bifiltration time is currently not being correctly collected and is instead reported as 0.
+    int start_position = params.shortName.find("pts_") + 4;
+    int length = params.shortName.find(".txt") - start_position;
+    int pts = std::stoi(params.shortName.substr(start_position, length));
+
+    output << "homol" << params.dim << " pts" << pts << " mod" << params.prime;
+    output << " 0 " << time << "\n";
     
     if (verbosity >= 2) { 
         debug() << "  -- xi_i computation took " << time << " milliseconds";

@@ -12,10 +12,7 @@ radius = 2           #mean radius of the annulus
 std_dev = 0.3        #standard deviation used for the radius of points selected from the annulus
 ball_radius = 1      #radius of ball around each point for calculating values of the density function
 rips_dist = 1000     #max distance for building the Rips complex (printed for the RIVET input file)
-num_files = 3       #make several samples
-
-if (num_files > 10):
-	raise Exception("Input style might assume file numbers are one-digit numbers")
+num_files = 2       #make several samples
 
 #number of "data" points to be sampled roughly from the annulus
 circle_pts = int (proportion_circle * total_pts)
@@ -23,7 +20,7 @@ circle_pts = int (proportion_circle * total_pts)
 noise_pts = total_pts - circle_pts     
 
 for n in range(num_files):
-	file_name = "noisy_circle_%03i_pts_%i.txt" % (total_pts, n)
+	file_name = "noisy_circle_%i_pts_%i.txt" % (n, total_pts)
 	f = open(file_name, "w")
 
 	#print file header info

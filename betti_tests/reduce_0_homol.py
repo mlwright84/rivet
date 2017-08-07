@@ -1,4 +1,4 @@
-# M2 files for 0th homology computations contain some extra, unneeded lines.
+# The Macaulay2 files for 0th homology computations contain some extra, unneeded lines.
 # This script removes them.
 
 import os

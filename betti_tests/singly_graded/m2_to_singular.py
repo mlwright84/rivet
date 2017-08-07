@@ -1,5 +1,5 @@
-# Use a singly-graded M2 file to produce a Singular file.
-# This script should be run AFTER the 0th homology files are simplified.
+# Use one of the generated Macaulay2 files to produce a Singular file.
+# NOTE: This script should be run AFTER the 0th homology files are reduced.
 
 import os
 import string

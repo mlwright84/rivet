@@ -6,6 +6,7 @@ import csv
 
 output = open("timings.csv", "w")
 writer = csv.writer(output, delimiter = ",")
+#Headers for the csv file
 rivet_header = ["RIVET", "homology", "points", "mod", "total time", "bifiltration time", "betti time"]
 macaulay_single_header = ["Macaulay2, singly graded", "homology", "points", "mod", "total time", "coker/homol time",
 	"prune time", "betti time"]

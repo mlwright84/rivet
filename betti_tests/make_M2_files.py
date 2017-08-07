@@ -1,12 +1,11 @@
 # This script collects timing data from RIVET, and also generates three types of Macaulay2 files.
 # Each Macaulay2 file is then moved to an appropriate folder.
 # Takes in one command-line argument, the prime field to be used.
-# The prime field defaults to 2 if no argument is given.
 
 import os
 import sys
 
-prime = 2 if len(sys.argv) == 1 else int(sys.argv[1]) 
+prime = int(sys.argv[1]) 
 
 for homology in range(2):
 	for filename in os.listdir():
