@@ -1,0 +1,88 @@
+homol1 pts50 mod13 4690 30 50
+homol1 pts25 mod2 130 0 0
+homol0 pts25 mod13 0 10
+homol1 pts25 mod13 100 0 10
+homol0 pts50 mod2 10 0
+homol0 pts25 mod13 0 0
+homol0 pts50 mod2 0 20
+homol1 pts25 mod2 160 0 10
+homol1 pts20 mod2 50 0 0
+homol1 pts20 mod13 20 0 0
+homol0 pts50 mod13 0 10
+homol0 pts50 mod2 10 10
+homol0 pts25 mod13 0 0
+homol0 pts50 mod13 10 10
+homol0 pts25 mod2 0 0
+homol1 pts25 mod13 80 0 0
+homol1 pts25 mod13 80 10 0
+homol0 pts20 mod2 0 0
+homol0 pts25 mod13 0 0
+homol0 pts50 mod13 10 0
+homol0 pts25 mod13 0 0
+homol0 pts25 mod2 0 0
+homol0 pts50 mod2 10 10
+homol0 pts50 mod13 10 10
+homol0 pts50 mod13 10 10
+homol0 pts50 mod2 10 10
+homol0 pts25 mod2 0 0
+homol1 pts50 mod2 15620 20 50
+homol0 pts50 mod2 0 20
+homol1 pts20 mod13 20 0 0
+homol1 pts50 mod2 15520 30 40
+homol1 pts50 mod13 4470 30 50
+homol1 pts25 mod2 140 0 0
+homol1 pts25 mod2 140 10 0
+homol1 pts25 mod2 140 0 0
+homol1 pts25 mod13 80 0 10
+homol0 pts50 mod13 0 10
+homol0 pts20 mod13 0 0
+homol0 pts50 mod2 10 10
+homol1 pts25 mod2 140 0 0
+homol1 pts25 mod2 140 10 0
+homol0 pts25 mod13 0 0
+homol1 pts25 mod2 140 0 0
+homol0 pts25 mod2 0 0
+homol1 pts50 mod13 4500 30 50
+homol1 pts25 mod13 80 0 0
+homol1 pts50 mod13 4580 20 50
+homol0 pts50 mod2 10 0
+homol0 pts50 mod13 10 10
+homol1 pts50 mod2 16610 20 50
+homol1 pts50 mod2 17540 20 50
+homol0 pts25 mod2 0 0
+homol1 pts50 mod13 4500 30 40
+homol0 pts25 mod2 0 0
+homol1 pts50 mod2 16040 30 50
+homol1 pts50 mod2 16340 30 40
+homol0 pts20 mod2 0 10
+homol0 pts20 mod13 10 0
+homol0 pts25 mod13 0 0
+homol0 pts50 mod2 20 10
+homol1 pts50 mod13 5090 20 50
+homol1 pts50 mod2 17170 30 60
+homol0 pts50 mod13 10 10
+homol1 pts25 mod13 80 0 10
+homol0 pts50 mod2 10 10
+homol1 pts25 mod13 80 0 0
+homol0 pts25 mod2 0 0
+homol1 pts50 mod13 5370 30 50
+homol0 pts25 mod13 0 0
+homol0 pts50 mod13 10 0
+homol1 pts25 mod2 160 10 0
+homol1 pts50 mod13 5050 30 40
+homol1 pts25 mod2 150 0 10
+homol1 pts25 mod13 80 0 0
+homol1 pts50 mod2 17000 30 40
+homol0 pts25 mod2 0 0
+homol1 pts20 mod2 50 0 0
+homol0 pts25 mod13 10 0
+homol0 pts25 mod13 0 0
+homol1 pts25 mod13 80 0 10
+homol1 pts50 mod2 18980 30 60
+homol0 pts50 mod13 10 10
+homol0 pts25 mod2 0 0
+homol0 pts25 mod2 0 0
+homol1 pts50 mod2 19430 30 50
+homol1 pts50 mod13 5520 30 40
+homol1 pts25 mod13 80 10 0
+homol1 pts50 mod13 4840 30 50
