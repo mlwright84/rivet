@@ -14,7 +14,7 @@ macaulay_bi_header = ["Macaulay2, bigraded", "homology", "points", "mod", "total
 	"prune time", "betti time"]
 macaulay_minimal_header = ["Macaulay2, minimal_betti", "homology", "points", "mod", "total time", "coker/homol time", "minimal_betti time"]
 singular_res_header = ["Singular, res", "homology", "points", "mod", "total time", "homol time", "resolution time", "betti time"]
-singular_sres_header = ["Singular, sres", "homology", "points", "mod", "total time", "homol time", "resolution time", "betti time"]
+singular_sres_header = ["Singular, s_res", "homology", "points", "mod", "total time", "homol time", "resolution time", "betti time"]
 
 with open("rivet_timing.txt", "r") as read_file:
 	writer.writerow(rivet_header)
