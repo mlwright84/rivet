@@ -162,7 +162,7 @@ for file_name in os.listdir("singly_graded/"):
 		f1.write('write(":a singular_res_times.txt", string(t1, " ", t2, " ", t3));\n')
 	f1.close()
 
-	# Copy the lines into another file, with a couple of tweaks -- repeat with sres()
+	# Copy the lines into another file, with a couple of tweaks -- repeat with s_res()
 	sres_file = file_name[:-3] + "_sres.sing"
 	f1 = open(sres_file, "w")
 	f2 = open(res_file, "r")
